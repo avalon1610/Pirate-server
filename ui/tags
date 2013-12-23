@@ -227,8 +227,8 @@ handler	mongoose.c	/^  mg_handler_t handler;$/;"	m	struct:uri_handler	file:	acce
 http_headers	mongoose.h	/^  } http_headers[30];$/;"	m	struct:mg_connection	typeref:struct:mg_connection::mg_header	access:public
 http_version	mongoose.h	/^  const char *http_version;   \/\/ E.g. "1.0", "1.1"$/;"	m	struct:mg_connection	access:public
 in	mongoose.c	/^  unsigned char in[64];$/;"	m	struct:MD5Context	file:	access:public
+index_html	main.c	/^static int index_html(struct mg_connection *conn)$/;"	f	file:	signature:(struct mg_connection *conn)
 info	mongoose.c	/^  WIN32_FIND_DATAW info;$/;"	m	struct:DIR	file:	access:public
-init_server_name	main.c	/^static void init_server_name(void)$/;"	f	file:	signature:(void)
 int64_t	mongoose.c	/^typedef __int64   int64_t;$/;"	t	file:
 iobuf	mongoose.c	/^struct iobuf {$/;"	s	file:
 iobuf::buf	mongoose.c	/^  char *buf;    \/\/ Buffer that holds the data$/;"	m	struct:iobuf	file:	access:public
@@ -262,7 +262,7 @@ lsa	mongoose.c	/^  union socket_address lsa;   \/\/ Listening socket address$/;"
 lseek	mongoose.c	73;"	d	file:
 lua_error_handler	mongoose.c	/^static int lua_error_handler(lua_State *L) {$/;"	f	file:	signature:(lua_State *L)
 lua_write	mongoose.c	/^static int lua_write(lua_State *L) {$/;"	f	file:	signature:(lua_State *L)
-main	main.c	/^int main(int argc,char *argv[])$/;"	f	signature:(int argc,char *argv[])
+main	main.c	/^int main(void)$/;"	f	signature:(void)
 match_prefix	mongoose.c	/^static int match_prefix(const char *pattern, int pattern_len, const char *str) {$/;"	f	file:	signature:(const char *pattern, int pattern_len, const char *str)
 mg_add_uri_handler	mongoose.c	/^void mg_add_uri_handler(struct mg_server *server, const char *uri,$/;"	f	signature:(struct mg_server *server, const char *uri, mg_handler_t handler)
 mg_add_uri_handler	mongoose.h	/^void mg_add_uri_handler(struct mg_server *, const char *uri, mg_handler_t);$/;"	p	signature:(struct mg_server *, const char *uri, mg_handler_t)
@@ -431,7 +431,6 @@ socklen_t	mongoose.c	/^typedef int socklen_t;$/;"	t	file:
 spool	mongoose.c	/^static int spool(struct iobuf *io, const void *buf, int len) {$/;"	f	file:	signature:(struct iobuf *io, const void *buf, int len)
 ssl	mongoose.c	/^  void *ssl;                \/\/ SSL descriptor$/;"	m	union:endpoint	file:	access:public
 st	mongoose.c	/^  file_stat_t st;$/;"	m	struct:dir_entry	file:	access:public
-start_mongoose	main.c	/^static void start_mongoose(int argc,char *argv[])$/;"	f	file:	signature:(int argc,char *argv[])
 start_process	mongoose.c	/^static pid_t start_process(char *interp, const char *cmd, const char *env,$/;"	f	file:	signature:(char *interp, const char *cmd, const char *env, const char *envp[], const char *dir, sock_t sock)
 start_process	mongoose.c	/^static pid_t start_process(const char *interp, const char *cmd, const char *env,$/;"	f	file:	signature:(const char *interp, const char *cmd, const char *env, const char *envp[], const char *dir, sock_t sock)
 stat	mongoose.c	72;"	d	file:
