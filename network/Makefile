@@ -1,8 +1,8 @@
-PROG = ../bin/test
-CFLAGS = -Os -W -Wall -lpcap -I. -I.. $(CFLAGS_EXTRA)
-SOURCES = test.c
+PROG = ../bin/arp
+CFLAGS = -O0 -W -Wall -lpcap -lnet -I./inculde -I.. $(CFLAGS_EXTRA)
+SOURCES = ./arp.c ./network.c
 all: $(PROG)
 
-$(PROG):
+$(PROG):$(SOURCES)
 	$(CC) -g $(SOURCES) -o $@ $(CFLAGS)
 
