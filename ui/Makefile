@@ -1,11 +1,20 @@
-PROG = ../bin/ui
-EXE_SUFFIX = 
-CFLAGS = -std=c99 -Os -W -Wall -pedantic -pthread -pipe -I. -I.. $(CFLAGS_EXTRA)
-SOURCES = mongoose.c main.c
-all: $(PROG) 
+SRC = mongoose.c lib_ui.c 
+LIB = ../lib/libui.a
+OBJ = mongoose.o lib_ui.o
 
-$(PROG): $(SOURCES)
-	$(CC) -g $(SOURCES) -o $@ $(CFLAGS)
+CC = gcc
+AR = ar rc
+RM = rm -f
 
+.PHONY:all
+all: $(LIB) 
+
+$(LIB):$(OBJ)
+	$(AR) $(LIB) $^
+
+$(OBJ):$(SRC)
+	$(CC) -c $^
+
+.PHONY:clean
 clean:
-	rm $(PROG)
+	$(RM) $(LIB_DIR)$(LIB) *.o

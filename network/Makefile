@@ -1,6 +1,6 @@
 PROG = ../bin/arp
 CFLAGS = -O0 -W -Wall -lpcap -lnet -I./inculde -I.. $(CFLAGS_EXTRA)
-SOURCES = ./arp.c ./network.c
+SOURCES = ./arp.c ./network.c ./ethernet.c
 all: $(PROG)
 
 $(PROG):$(SOURCES)

@@ -62,6 +62,7 @@ u_int32_t Get_long_address(char *ip_address)
 					}else
 					{
 						changed_ip = (changed_ip<<8) + digit;
+						changed_ip= htonl(changed_ip);
 						return changed_ip;
 					}
 			}else // ·Ç·¨ÊäÈë

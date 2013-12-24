@@ -1,0 +1,27 @@
+SRC = main.c
+TARGET = pppp
+CFLAG = -g -I../ui
+LDFLAG = -L../lib -lui -pthread
+SHELL = /bin/sh
+LIB_DIR = ../lib/
+BIN_DIR = ../bin/
+UI_DIR = ../ui/
+UI_LIB = ../lib/libui.a
+
+CC = gcc
+AR = ar rc
+RM = rm -f
+
+.PHONY:all
+all: $(BIN_DIR)$(TARGET)
+	
+$(BIN_DIR)$(TARGET):$(SRC) $(UI_LIB)
+	$(CC) $(CFLAG) $< -o $@ $(LDFLAG)
+
+$(UI_LIB):
+	cd $(UI_DIR);make
+
+.PHONY:clean
+clean:
+	$(RM) *.o $(BIN_DIR)$(TARGET)
+	cd $(UI_DIR);make clean
