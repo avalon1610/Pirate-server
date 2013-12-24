@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "lib_ui.h"
+#include "comm.h"
 
 int main()
 {
