@@ -1,6 +1,6 @@
-SRC = main.c
+SRC = main.cpp
 TARGET = pppp
-CFLAG = -g -I../ui
+CFLAG = -g -I../ui -I../include
 LDFLAG = -L../lib -lui -pthread
 SHELL = /bin/sh
 LIB_DIR = ../lib/
@@ -8,7 +8,7 @@ BIN_DIR = ../bin/
 UI_DIR = ../ui/
 UI_LIB = ../lib/libui.a
 
-CC = gcc
+CC = g++
 AR = ar rc
 RM = rm -f
 

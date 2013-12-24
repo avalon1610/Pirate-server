@@ -1,0 +1,20 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ARP_CACHE_SATURATION_STORM	comm.h	/^    ARP_CACHE_SATURATION_STORM,$/;"	e	enum:MISSION_TYPE
+ARP_GRAMMEAR	comm.h	/^    ARP_GRAMMEAR$/;"	e	enum:MISSION_TYPE
+ARP_HOST_REPLY_STORM	comm.h	/^    ARP_HOST_REPLY_STORM,$/;"	e	enum:MISSION_TYPE
+ARP_REQUEST_STORM	comm.h	/^    ARP_REQUEST_STORM = 0,$/;"	e	enum:MISSION_TYPE
+COMM_H_	comm.h	2;"	d
+DEFAULT_STR_LEN	comm.h	4;"	d
+MISSION	comm.h	/^} MISSION,*PMISSION;$/;"	t	typeref:struct:_MISSION
+MISSION_TYPE	comm.h	/^enum MISSION_TYPE$/;"	g
+PMISSION	comm.h	/^} MISSION,*PMISSION;$/;"	t	typeref:struct:_MISSION
+_MISSION	comm.h	/^typedef struct _MISSION$/;"	s
+_MISSION::name	comm.h	/^    char name[DEFAULT_STR_LEN];$/;"	m	struct:_MISSION	access:public
+_MISSION::type	comm.h	/^    MISSION_TYPE type;$/;"	m	struct:_MISSION	access:public
+name	comm.h	/^    char name[DEFAULT_STR_LEN];$/;"	m	struct:_MISSION	access:public
+type	comm.h	/^    MISSION_TYPE type;$/;"	m	struct:_MISSION	access:public
