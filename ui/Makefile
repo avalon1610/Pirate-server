@@ -1,6 +1,7 @@
-SRC = mongoose.c lib_ui.c 
+SRC = mongoose.c lib_ui.c cJSON.c
 LIB = ../lib/libui.a
-OBJ = mongoose.o lib_ui.o
+OBJ = mongoose.o lib_ui.o cJSON.o
+CFLAGS = -I../include
 
 CC = gcc
 AR = ar rc
@@ -13,7 +14,7 @@ $(LIB):$(OBJ)
 	$(AR) $(LIB) $^
 
 $(OBJ):$(SRC)
-	$(CC) -c $^
+	$(CC) -c $^ $(CFLAGS)
 
 .PHONY:clean
 clean:
