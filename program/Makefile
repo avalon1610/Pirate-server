@@ -18,7 +18,7 @@ all: $(BIN_DIR)$(TARGET)
 $(BIN_DIR)$(TARGET):$(SRC) $(UI_LIB)
 	$(CC) $(CFLAG) $< -o $@ $(LDFLAG)
 
-$(UI_LIB):
+$(UI_LIB):$(UI_DIR)*.c
 	cd $(UI_DIR);make
 
 .PHONY:clean

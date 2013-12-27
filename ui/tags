@@ -6,9 +6,11 @@
 !_TAG_PROGRAM_VERSION	5.8	//
 ACCESS_CONTROL_LIST	mongoose.c	/^  ACCESS_CONTROL_LIST, ACCESS_LOG_FILE, AUTH_DOMAIN, CGI_INTERPRETER,$/;"	e	enum:__anon1	file:
 ACCESS_LOG_FILE	mongoose.c	/^  ACCESS_CONTROL_LIST, ACCESS_LOG_FILE, AUTH_DOMAIN, CGI_INTERPRETER,$/;"	e	enum:__anon1	file:
+AR	Makefile	/^AR = ar rc$/;"	m
 ARRAY_SIZE	mongoose.c	128;"	d	file:
 AUTH_DOMAIN	mongoose.c	/^  ACCESS_CONTROL_LIST, ACCESS_LOG_FILE, AUTH_DOMAIN, CGI_INTERPRETER,$/;"	e	enum:__anon1	file:
-CFLAGS	Makefile	/^CFLAGS = -std=c99 -Os -W -Wall -pedantic -pthread -pipe -I. -I.. $(CFLAGS_EXTRA)$/;"	m
+CC	Makefile	/^CC = gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS = -I..\/include$/;"	m
 CGI_ENVIRONMENT_SIZE	mongoose.c	133;"	d	file:
 CGI_INTERPRETER	mongoose.c	/^  ACCESS_CONTROL_LIST, ACCESS_LOG_FILE, AUTH_DOMAIN, CGI_INTERPRETER,$/;"	e	enum:__anon1	file:
 CGI_PATTERN	mongoose.c	/^  CGI_PATTERN, DOCUMENT_ROOT, ENABLE_DIRECTORY_LISTING, ERROR_LOG_FILE,$/;"	e	enum:__anon1	file:
@@ -32,7 +34,6 @@ EP_NONE	mongoose.c	/^enum endpoint_type { EP_NONE, EP_FILE, EP_CGI, EP_USER, EP_
 EP_PUT	mongoose.c	/^enum endpoint_type { EP_NONE, EP_FILE, EP_CGI, EP_USER, EP_PUT };$/;"	e	enum:endpoint_type	file:
 EP_USER	mongoose.c	/^enum endpoint_type { EP_NONE, EP_FILE, EP_CGI, EP_USER, EP_PUT };$/;"	e	enum:endpoint_type	file:
 ERROR_LOG_FILE	mongoose.c	/^  CGI_PATTERN, DOCUMENT_ROOT, ENABLE_DIRECTORY_LISTING, ERROR_LOG_FILE,$/;"	e	enum:__anon1	file:
-EXE_SUFFIX	Makefile	/^EXE_SUFFIX = $/;"	m
 EXTRA_HTTP_HEADERS	mongoose.c	140;"	d	file:
 EXTRA_MIME_TYPES	mongoose.c	/^  EXTRA_MIME_TYPES, GLOBAL_AUTH_FILE, HIDE_FILES_PATTERN, IDLE_TIMEOUT_MS,$/;"	e	enum:__anon1	file:
 F1	mongoose.c	2295;"	d	file:
@@ -48,6 +49,7 @@ INT64_FMT	mongoose.c	106;"	d	file:
 INT64_FMT	mongoose.c	65;"	d	file:
 INVALID_SOCKET	mongoose.c	105;"	d	file:
 IOBUF_SIZE	mongoose.c	130;"	d	file:
+LIB	Makefile	/^LIB = ..\/lib\/libui.a$/;"	m
 LINKED_LIST_ADD_TO_FRONT	mongoose.c	121;"	d	file:
 LINKED_LIST_ADD_TO_TAIL	mongoose.c	123;"	d	file:
 LINKED_LIST_DECLARE_AND_INIT	mongoose.c	116;"	d	file:
@@ -74,14 +76,15 @@ MD5_CTX	mongoose.c	/^} MD5_CTX;$/;"	t	typeref:struct:MD5Context	file:
 MONGOOSE_HEADER_INCLUDED	mongoose.h	21;"	d
 MONGOOSE_VERSION	mongoose.h	23;"	d
 NUM_OPTIONS	mongoose.c	/^  SSL_CERTIFICATE, URL_REWRITES, NUM_OPTIONS$/;"	e	enum:__anon1	file:
+OBJ	Makefile	/^OBJ = mongoose.o lib_ui.o$/;"	m
 O_BINARY	mongoose.c	109;"	d	file:
 PASSWORDS_FILE_NAME	mongoose.c	136;"	d	file:
-PROG	Makefile	/^PROG = ..\/bin\/ui$/;"	m
 R0	mongoose.c	1231;"	d	file:
 R1	mongoose.c	1232;"	d	file:
 R2	mongoose.c	1233;"	d	file:
 R3	mongoose.c	1234;"	d	file:
 R4	mongoose.c	1235;"	d	file:
+RM	Makefile	/^RM = rm -f$/;"	m
 RUN_AS_USER	mongoose.c	/^  INDEX_FILES, LISTENING_PORT, DAV_AUTH_FILE, RUN_AS_USER,$/;"	e	enum:__anon1	file:
 SHA1Final	mongoose.c	/^static void SHA1Final(unsigned char digest[20], SHA1_CTX* context) {$/;"	f	file:	signature:(unsigned char digest[20], SHA1_CTX* context)
 SHA1HANDSOFF	mongoose.c	1211;"	d	file:
@@ -89,11 +92,12 @@ SHA1Init	mongoose.c	/^static void SHA1Init(SHA1_CTX* context) {$/;"	f	file:	sign
 SHA1Transform	mongoose.c	/^static void SHA1Transform(uint32_t state[5], const unsigned char buffer[64]) {$/;"	f	file:	signature:(uint32_t state[5], const unsigned char buffer[64])
 SHA1Update	mongoose.c	/^static void SHA1Update(SHA1_CTX* context, const unsigned char* data,$/;"	f	file:	signature:(SHA1_CTX* context, const unsigned char* data, uint32_t len)
 SHA1_CTX	mongoose.c	/^} SHA1_CTX;$/;"	t	typeref:struct:__anon3	file:
-SOURCES	Makefile	/^SOURCES = mongoose.c main.c$/;"	m
+SRC	Makefile	/^SRC = mongoose.c lib_ui.c$/;"	m
 SSL_CERTIFICATE	mongoose.c	/^  SSL_CERTIFICATE, URL_REWRITES, NUM_OPTIONS$/;"	e	enum:__anon1	file:
 STR	mongoose.c	83;"	d	file:
 STRX	mongoose.c	82;"	d	file:
 S_ISDIR	mongoose.c	70;"	d	file:
+UI_LIB_H	lib_ui.h	2;"	d
 URL_REWRITES	mongoose.c	/^  SSL_CERTIFICATE, URL_REWRITES, NUM_OPTIONS$/;"	e	enum:__anon1	file:
 WIN32_LEAN_AND_MEAN	mongoose.c	22;"	d	file:
 _CRT_SECURE_NO_WARNINGS	mongoose.c	21;"	d	file:
@@ -125,6 +129,7 @@ birth_time	mongoose.c	/^  time_t birth_time;$/;"	m	struct:connection	file:	acces
 bits	mongoose.c	/^  uint32_t bits[2];$/;"	m	struct:MD5Context	file:	access:public
 blk	mongoose.c	1229;"	d	file:
 blk0	mongoose.c	/^static uint32_t blk0(union char64long16 *block, int i) {$/;"	f	file:	signature:(union char64long16 *block, int i)
+bool	lib_ui.c	6;"	d	file:
 buf	mongoose.c	/^  char *buf;    \/\/ Buffer that holds the data$/;"	m	struct:iobuf	file:	access:public
 buf	mongoose.c	/^  char buf[CGI_ENVIRONMENT_SIZE];       \/\/ Environment buffer$/;"	m	struct:cgi_env_block	file:	access:public
 buf	mongoose.c	/^  uint32_t buf[4];$/;"	m	struct:MD5Context	file:	access:public
@@ -153,6 +158,7 @@ closedir	mongoose.c	/^static int closedir(DIR *dir) {$/;"	f	file:	signature:(DIR
 closesocket	mongoose.c	97;"	d	file:
 compare_dir_entries	mongoose.c	/^static int __cdecl compare_dir_entries(const void *p1, const void *p2) {$/;"	f	file:	signature:(const void *p1, const void *p2)
 config_options	mongoose.c	/^  char *config_options[NUM_OPTIONS];$/;"	m	struct:mg_server	file:	access:public
+config_setup	lib_ui.c	/^static int config_setup(struct mg_connection *conn)$/;"	f	file:	signature:(struct mg_connection *conn)
 conn	mongoose.c	/^  struct connection *conn;$/;"	m	struct:dir_entry	typeref:struct:dir_entry::connection	file:	access:public
 conn	mongoose.c	/^  struct mg_connection *conn;$/;"	m	struct:cgi_env_block	typeref:struct:cgi_env_block::mg_connection	file:	access:public
 connection	mongoose.c	/^struct connection {$/;"	s	file:
@@ -200,6 +206,7 @@ endpoint_type	mongoose.c	/^enum endpoint_type { EP_NONE, EP_FILE, EP_CGI, EP_USE
 expire_time	mongoose.c	/^  time_t expire_time;$/;"	m	struct:connection	file:	access:public
 ext_len	mongoose.c	/^  size_t ext_len;$/;"	m	struct:__anon2	file:	access:public
 extension	mongoose.c	/^  const char *extension;$/;"	m	struct:__anon2	file:	access:public
+false	lib_ui.c	8;"	d	file:
 fd	mongoose.c	/^  int fd;                   \/\/ Opened regular local file$/;"	m	union:endpoint	file:	access:public
 file_name	mongoose.c	/^  char *file_name;$/;"	m	struct:dir_entry	file:	access:public
 file_stat_t	mongoose.c	/^typedef struct _stati64 file_stat_t;$/;"	t	typeref:struct:_stati64	file:
@@ -227,7 +234,6 @@ handler	mongoose.c	/^  mg_handler_t handler;$/;"	m	struct:uri_handler	file:	acce
 http_headers	mongoose.h	/^  } http_headers[30];$/;"	m	struct:mg_connection	typeref:struct:mg_connection::mg_header	access:public
 http_version	mongoose.h	/^  const char *http_version;   \/\/ E.g. "1.0", "1.1"$/;"	m	struct:mg_connection	access:public
 in	mongoose.c	/^  unsigned char in[64];$/;"	m	struct:MD5Context	file:	access:public
-index_html	main.c	/^static int index_html(struct mg_connection *conn)$/;"	f	file:	signature:(struct mg_connection *conn)
 info	mongoose.c	/^  WIN32_FIND_DATAW info;$/;"	m	struct:DIR	file:	access:public
 int64_t	mongoose.c	/^typedef __int64   int64_t;$/;"	t	file:
 iobuf	mongoose.c	/^struct iobuf {$/;"	s	file:
@@ -262,7 +268,6 @@ lsa	mongoose.c	/^  union socket_address lsa;   \/\/ Listening socket address$/;"
 lseek	mongoose.c	73;"	d	file:
 lua_error_handler	mongoose.c	/^static int lua_error_handler(lua_State *L) {$/;"	f	file:	signature:(lua_State *L)
 lua_write	mongoose.c	/^static int lua_write(lua_State *L) {$/;"	f	file:	signature:(lua_State *L)
-main	main.c	/^int main(void)$/;"	f	signature:(void)
 match_prefix	mongoose.c	/^static int match_prefix(const char *pattern, int pattern_len, const char *str) {$/;"	f	file:	signature:(const char *pattern, int pattern_len, const char *str)
 mg_add_uri_handler	mongoose.c	/^void mg_add_uri_handler(struct mg_server *server, const char *uri,$/;"	f	signature:(struct mg_server *server, const char *uri, mg_handler_t handler)
 mg_add_uri_handler	mongoose.h	/^void mg_add_uri_handler(struct mg_server *, const char *uri, mg_handler_t);$/;"	p	signature:(struct mg_server *, const char *uri, mg_handler_t)
@@ -365,6 +370,7 @@ open_file_endpoint	mongoose.c	/^static void open_file_endpoint(struct connection
 open_listening_socket	mongoose.c	/^static sock_t open_listening_socket(union socket_address *sa) {$/;"	f	file:	signature:(union socket_address *sa)
 open_local_endpoint	mongoose.c	/^static void open_local_endpoint(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
 opendir	mongoose.c	/^static DIR *opendir(const char *name) {$/;"	f	file:	signature:(const char *name)
+parse_data	lib_ui.c	/^static int parse_data(const char *data)$/;"	f	file:	signature:(const char *data)
 parse_date_string	mongoose.c	/^static time_t parse_date_string(const char *datetime) {$/;"	f	file:	signature:(const char *datetime)
 parse_http_headers	mongoose.c	/^static void parse_http_headers(char **buf, struct mg_connection *ri) {$/;"	f	file:	signature:(char **buf, struct mg_connection *ri)
 parse_http_message	mongoose.c	/^static int parse_http_message(char *buf, int len, struct mg_connection *ri) {$/;"	f	file:	signature:(char *buf, int len, struct mg_connection *ri)
@@ -398,6 +404,8 @@ request_len	mongoose.c	/^  int request_len;  \/\/ Request length, including last
 request_method	mongoose.h	/^  const char *request_method; \/\/ "GET", "POST", etc$/;"	m	struct:mg_connection	access:public
 result	mongoose.c	/^  struct dirent result;$/;"	m	struct:DIR	typeref:struct:DIR::dirent	file:	access:public
 rol	mongoose.c	1218;"	d	file:
+run_server	lib_ui.c	/^int run_server(void)$/;"	f	signature:(void)
+run_server	lib_ui.h	/^void run_server();$/;"	p	signature:()
 sa	mongoose.c	/^  struct sockaddr sa;$/;"	m	union:socket_address	typeref:struct:socket_address::sockaddr	file:	access:public
 scan_directory	mongoose.c	/^static int scan_directory(struct connection *conn, const char *dir,$/;"	f	file:	signature:(struct connection *conn, const char *dir, struct dir_entry **arr)
 send_authorization_request	mongoose.c	/^static void send_authorization_request(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
@@ -444,6 +452,7 @@ to64	mongoose.c	107;"	d	file:
 to64	mongoose.c	75;"	d	file:
 to_unicode	mongoose.c	/^static void to_unicode(const char *path, wchar_t *wbuf, size_t wbuf_len) {$/;"	f	file:	signature:(const char *path, wchar_t *wbuf, size_t wbuf_len)
 transfer_file_data	mongoose.c	/^static void transfer_file_data(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
+true	lib_ui.c	7;"	d	file:
 uh	mongoose.c	/^  struct uri_handler *uh;   \/\/ URI handler user function$/;"	m	union:endpoint	typeref:struct:endpoint::uri_handler	file:	access:public
 uint16_t	mongoose.c	/^typedef unsigned short uint16_t;$/;"	t	file:
 uint32_t	mongoose.c	/^typedef unsigned int uint32_t;$/;"	t	file:
