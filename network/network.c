@@ -1,4 +1,12 @@
 #include  "./include/network.h"
+#include  "../include/comm.h"
+#include <time.h>
+#include <pthread.h>
+
+
+
+extern LIST_ENTRY mission_list;
+extern pthread_rwlock_t rwlock;
 
 
 int send_storm(libnet_t *lib_net,int size,int pcap_size)
@@ -19,7 +27,7 @@ int send_storm(libnet_t *lib_net,int size,int pcap_size)
 }
 
 
-u_int32_t Get_long_address(char *ip_address)
+u_int32_t Get_long_address(u_char *ip_address)
 {
 
 	int ip_len=16;
@@ -71,11 +79,82 @@ u_int32_t Get_long_address(char *ip_address)
 				}
 	}
 	
+	return 0;
+
+}
+
+
+
+void Create_Random(int len,u_char *Rd)
+{
+	
+
+	int i=len/4;
+	int j;
+	int R;
+	srand((unsigned)time(NULL));
+	for(j=0;j<i;j++)
+		{
+		
+		R=rand();
+		memcpy(Rd+4*j,&R,sizeof(int));
+
+	}
+
+	int m=len%4;
+	R=rand();
+	memcpy(Rd+4*j,&R,m);
+
+
+}
+
+
+void start_test()
+{	
+	LIST_ENTRY runnig_list;
+	InitializeListHead(&runnig_list);
+	pthread_t thread_id;
+ 	int return_id;
+    pthread_rwlock_rdlock(&rwlock);
+	LIST_ENTRY *current = mission_list.Flink;
+	while(current != &mission_list)
+	{
+		entry = CONTAINING_RECORD(current,MISSION,node);
+		if (entry->status==0 )
+		{
+		MISSION *run_mission = (MISSION *)malloc(sizeof(MISSION));
+    	memset(run_mission,0,sizeof(MISSION));
+		memcpy(run_mission,entry);
+		InsertTailList(&runnig_list,&run_mission->node);
+		}
+		current = current->Flink;
+	}
+	pthread_rwlock_unlock(&rwlock);
+
+	current = run_mission.Flink;
+	while(current != &runnig_list)
+	{
+		entry = CONTAINING_RECORD(current,MISSION,node);
+		switch(entry->type){
+		case ARP_REQUEST_STORM :
+			pthread_create (&thread_id, NULL, &ARP_Request_Storm, &entry->param); 
+			pthread_join (thread_id, NULL);
+			break;
+		//case 
+
+
+		}
+		
+		}
+		current = current->Flink;
+	}
+
+		
+
 
 
 
 
 }
-
 
 

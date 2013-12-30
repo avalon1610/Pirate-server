@@ -17,7 +17,9 @@ u_char org_code[3] = {0x00, 0x00, 0x00};
 
 int ARP_Request_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *enet_dst,char *device,int storm_size)
 {
-	u_int32_t i;
+
+	u_int32_t d;
+	u_int32_t s;
     libnet_t *l;
 	u_int8_t *packet;
     u_int32_t packet_s;
@@ -35,9 +37,9 @@ int ARP_Request_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *ene
 	   return 0;
    	}
    	else
-	i = libnet_get_ipaddr4(l);	
+	s = Get_long_address(ip_src);
 
-
+	d = Get_long_address(ip_dst);
 	t = libnet_build_arp(
 	            ARPHRD_ETHER,                           /* hardware addr */
 	            ETHERTYPE_IP,                           /* protocol addr */
@@ -45,9 +47,9 @@ int ARP_Request_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *ene
 	            4,                                      /* protocol addr size */
 	            ARPOP_REPLY,                            /* operation type */
 	            enet_src,                               /* sender hardware addr */
-	            (u_int8_t *)&i,                         /* sender protocol addr */
+	            (u_int8_t *)&s,                         /* sender protocol addr */
 	            enet_dst,                               /* target hardware addr */
-	            (u_int8_t *)&i,                         /* target protocol addr */
+	            (u_int8_t *)&d,                         /* target protocol addr */
 	            NULL,                                   /* payload */
 	            0,                                      /* payload size */
 	            l,                                      /* libnet context */
@@ -87,10 +89,11 @@ int ARP_Request_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *ene
 }
 
 
-int APR_Host_Reply_Storm(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet_dst,char *device,int storm_size)
+int APR_Host_Reply_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *enet_dst,char *device,int storm_size)
 {
 	u_int32_t i;
 	u_int32_t d;
+	u_int32_t s;
     libnet_t *l;
 	u_int8_t *packet;
     u_int32_t packet_s;
@@ -108,7 +111,7 @@ int APR_Host_Reply_Storm(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet
 	   return 0;
    	}
    	else
-	i = libnet_get_ipaddr4(l);	
+	s = Get_long_address(ip_src);;	
 	d = Get_long_address(ip_dst);
 
 	t = libnet_build_arp(
@@ -159,7 +162,7 @@ int APR_Host_Reply_Storm(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet
 
 }
 
-int ARP_Grammear(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet_dst,char *device)
+int ARP_Grammear(u_char *ip_dst,u_char *enet_src,u_char *enet_dst,char *device)
 {		
 		int c;
 		u_int32_t i;
@@ -173,7 +176,7 @@ int ARP_Grammear(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet_dst,cha
 		u_int16_t OPCODE=0x0001;
 		char errbuf[LIBNET_ERRBUF_SIZE];
 		u_char enet_000[6]={0x00,0x00,0x00,0x00,0x00,0x00};
-		u_char enet_fff[6]={0xff,0xff,0xff,0xff,0xff,0xff};
+		//u_char enet_fff[6]={0xff,0xff,0xff,0xff,0xff,0xff};
 		/*Create a arry to store the Grammear ARPHRD_TYPE,ARP_POROTOL ,OPCODE*/
 		u_int16_t Grammear_ARPHRD_TYPE[21]={
 		0x0000,0x0001,0x0002,0x0003,0x0004,0x0005,0x0006,0x0007,0x0008,0x0009,0x000a,
@@ -249,7 +252,7 @@ int ARP_Grammear(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet_dst,cha
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
+			c=libnet_write(l);
 			if (c == -1)
 		    {
 		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
@@ -549,7 +552,7 @@ int ARP_Grammear(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet_dst,cha
 						Grammear_ARPHRD_TYPE[m],							/* hardware addr */
 						ARP_POROTOL,							/* protocol addr */
 						6,										/* hardware addr size */
-						Grammear_ARP_POROTOL_SIZE,										/* protocol addr size */
+						Grammear_ARP_POROTOL_SIZE[j],										/* protocol addr size */
 						OPCODE,							        /* operation type */
 						enet_src,								/* sender hardware addr */
 						(u_int8_t *)&i, 						/* sender protocol addr */
@@ -883,19 +886,19 @@ int ARP_Grammear(char *ip_dst,char *ip_src,u_char *enet_src,u_char *enet_dst,cha
 /*ARP Cache Saturation Storm APR¸ßËÙ»º´æ²âÊÔ
 Ö÷Òª²âÊÔ·½Ê½¾ÍÊÇÔÚ·¢·ç±©Êý¾Ý±¨ÎÄµÄÍÍ¬Ê±
 ²»¶ÏµÄ¸Ä±ä±¾ÉíµÄIPµØÖ·ºÍMACµØÖ·*/
-int ARP_Cache_Saturation_Storm(char *ip_dst,u_char *enet_dst,char *device,int storm_size)
+int ARP_Cache_Saturation_Storm(u_char *ip_dst,u_char *enet_dst,char *device,int storm_size)
 {
 
 	int c;
 	int send_size=0;
-    u_int32_t i;
+   
     libnet_t *l;
 	u_int32_t d;
     libnet_ptag_t t;
     u_int8_t *packet;
     u_int32_t packet_s;
     char errbuf[LIBNET_ERRBUF_SIZE];
-	int pcap_count=0;
+	
 	u_char enet_src[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	d = Get_long_address(ip_dst);
 	l = libnet_init(
@@ -983,6 +986,7 @@ int ARP_Cache_Saturation_Storm(char *ip_dst,u_char *enet_dst,char *device,int st
 		  libnet_clear_packet(l);
 		  
 	}
+	return 1;
 }
 
 int 
@@ -992,8 +996,8 @@ main(int argc, char *argv[])
 
 	//int re=ARP_Grammear("192.168.1.1","192.168.1.100",enet_src,enet_dst,"eth0");
 	//int re= ARP_Cache_Saturation_Storm("192.168.1.100",enet_dst,"eth0",1000000);
-	int re=Ethernet_Brodacast_Storm(enet_dst,"eth0",1000000);
-    int c;
+	int re=icmp_storm("192.168.1.1","192.168.1.100",enet_src,enet_dst,"eth0",100000);
+    //int c;
     u_int32_t i;
     libnet_t *l;
     libnet_ptag_t t;
@@ -1001,7 +1005,7 @@ main(int argc, char *argv[])
     u_int8_t *packet;
     u_int32_t packet_s;
     char errbuf[LIBNET_ERRBUF_SIZE];
-	int pcap_count=0;
+	//int pcap_count=0;
 
     printf("libnet 1.1 packet shaping: ARP[link -- autobuilding ethernet]\n"); 
 
