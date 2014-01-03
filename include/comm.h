@@ -30,4 +30,13 @@ typedef struct _MISSION
     cJSON *param;
 } MISSION,*PMISSION;
 
+typedef struct _ENV {
+    unsigned char host[16];
+    unsigned char target1[16];
+    unsigned char target2[16];
+    unsigned char src_mac[6];
+    unsigned char dst_mac[6];
+} ENV,*PENV; 
+
 #endif
+
