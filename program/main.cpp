@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include "lib_ui.h"
 #include "comm.h"
+#include "network.h"
 
 LIST_ENTRY mission_list;
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
@@ -18,6 +19,7 @@ void Uninit()
 
 int main()
 {
+
     Init();
     run_server();
     Uninit();

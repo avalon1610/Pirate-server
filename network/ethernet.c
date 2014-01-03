@@ -1,4 +1,4 @@
-#include "./include/network.h"
+#include "network.h"
 
 
 int Ethernet_Brodacast_Storm(u_char *enet_src,char *device,int storm_size)

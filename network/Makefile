@@ -1,8 +1,24 @@
-PROG = ../bin/arp
-CFLAGS = -O0 -W -Wall -lpcap -lnet -I./include -I../include -I.. $(CFLAGS_EXTRA)
-SOURCES = ./arp.c ./network.c ./ethernet.c ./icmp.c
-all: $(PROG)
+CFLAGS = -O0 -W -Wall -lpcap -lnet -pthread
+SRC = arp.c network.c ethernet.c icmp.c
+LIB = ../lib/libnetwork.a
+OBJ = arp.o network.o ethernet.o icmp.o
+CFLAGS = -I../include
+	
+CC = gcc
+AR = ar rc
+RM = rm -f
+	
+.PHONY:all
+all: $(LIB) 
+	
+$(LIB):$(OBJ)
+	$(AR) $(LIB) $^
 
-$(PROG):$(SOURCES)
-	$(CC) -g $(SOURCES) -o $@ $(CFLAGS)
+$(OBJ):$(SRC)
+	$(CC) -c $^ $(CFLAGS)
+	
+.PHONY:clean
+clean:
+	$(RM) $(LIB_DIR)$(LIB) *.o
+
 

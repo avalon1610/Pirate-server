@@ -1,7 +1,11 @@
-#include  "./include/network.h"
+#define bool int
+#define true 1
+#define false 0
+#include  "network.h"
 #include  "../include/comm.h"
 #include <time.h>
 #include <pthread.h>
+
 
 
 
@@ -111,12 +115,23 @@ void Create_Random(int len,u_char *Rd)
 
 void start_test()
 {	
+
+	struct ARP_Request_Storm_ARG a={
+	.ip_dst="192.168.1.101",
+	.ip_src="192.168.1.102",
+	.enet_src={0x01,0x02,0x03,0x04,0x05,0x06},
+	.enet_dst={0x01,0x02,0x03,0x04,0x05,0x06},
+	.device="eth0",
+	.storm_size=10000
+	};
+	
 	LIST_ENTRY runnig_list;
 	InitializeListHead(&runnig_list);
 	pthread_t thread_id;
  	int return_id;
     pthread_rwlock_rdlock(&rwlock);
 	LIST_ENTRY *current = mission_list.Flink;
+	MISSION *entry;
 	while(current != &mission_list)
 	{
 		entry = CONTAINING_RECORD(current,MISSION,node);
@@ -124,37 +139,39 @@ void start_test()
 		{
 		MISSION *run_mission = (MISSION *)malloc(sizeof(MISSION));
     	memset(run_mission,0,sizeof(MISSION));
-		memcpy(run_mission,entry);
+		memcpy(run_mission,entry,sizeof(MISSION));
 		InsertTailList(&runnig_list,&run_mission->node);
 		}
 		current = current->Flink;
 	}
 	pthread_rwlock_unlock(&rwlock);
 
-	current = run_mission.Flink;
+	current = runnig_list.Flink;
 	while(current != &runnig_list)
 	{
 		entry = CONTAINING_RECORD(current,MISSION,node);
 		switch(entry->type){
 		case ARP_REQUEST_STORM :
-			pthread_create (&thread_id, NULL, &ARP_Request_Storm, &entry->param); 
+			pthread_create (&thread_id, NULL, &ARP_Request_Storm, (void *)&a); 
 			pthread_join (thread_id, NULL);
 			break;
 		//case 
 
 
 		}
-		
-		}
 		current = current->Flink;
-	}
-
+		}
 		
-
-
-
-
-
 }
+
+
+
+
+
+
+
+
+
+
 
 

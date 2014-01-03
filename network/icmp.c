@@ -1,4 +1,4 @@
-#include "./include/network.h"
+#include "network.h"
 
 /*
  *  $Id: icmp_echo_cq.c,v 1.3 2004/01/03 20:31:01 mike Exp $
