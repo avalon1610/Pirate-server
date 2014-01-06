@@ -1,3 +1,8 @@
+#ifdef _GNU_SOURCE
+#undef _GNU_SOURCE
+#endif
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +10,7 @@
 #include "lib_ui.h"
 #include "comm.h"
 #include "network.h"
+
 
 LIST_ENTRY mission_list;
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;

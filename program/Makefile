@@ -30,3 +30,4 @@ $(NET_LIB):$(NET_DIR)*.c
 clean:
 	$(RM) *.o $(BIN_DIR)$(TARGET)
 	cd $(UI_DIR);make clean
+	cd $(NET_DIR);make clean
