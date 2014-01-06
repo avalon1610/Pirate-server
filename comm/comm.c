@@ -1,8 +1,6 @@
-
-
 int DbgPrint(const char *format,...)
 {
-#ifdef Debug
+#ifdef DEBUG
     va_list args;
     va_start(args,format);
     vprintf(format,args);

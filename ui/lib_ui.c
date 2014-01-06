@@ -116,6 +116,7 @@ static int parse_env(const char *data,char *msg)
             strcpy(env->target1,temp_obj_1->valuestring);
         if (temp_obj_2)
             strcpy(env->target2,temp_obj_2->valuestring);
+        ret = true;
     }
     catch (RuntimeException)
     {
@@ -124,35 +125,57 @@ static int parse_env(const char *data,char *msg)
     finally
     {
         pthread_rwlock_unlock(&rwlock_env);
+        cJSON_Delete(root);
     }
         
     DbgPrint("Receive Env:\n host:%s\n target1:%s\n target2:%s\n",
            env->host,
            env->target1?env->target1:(unsigned char *)"NULL",
            env->target2?env->target2:(unsigned char *)"NULL");
-    ret = true;
     return ret;
 }
 
 static int parse_runner(const char *data,char *msg)
 {
     cJSON *root;
+    int status;
+    bool ret = false;
+    int type;
+    LIST_ENTRY *current = mission_list.Flink;
+    MISSION *entry;
     if (data == NULL)
-        return false;
+        return ret;
 
     try
     {
+        pthread_rwlock_wrlock(&rwlock);
         root = cJSON_Parse(data);
-        
-        
+        status = cJSON_GetObjectItem(root,"status")->valueint;
+        type = cJSON_GetObjectItem(root,"type")->valueint;
+
+        while (current != &mission_list)
+        {
+            entry = CONTAINING_RECORD(current,MISSION,node);
+            if (entry->type == type)
+            {
+                entry->status = status;
+                ret = true;
+                break;
+            }
+            current = current->Flink;
+        }
     }
     catch (RuntimeException)
     {   
         strcpy(msg,"Invalid Parameter");
-        return false;
+    }
+    finally
+    {
+        pthread_rwlock_unlock(&rwlock);
+        cJSON_Delete(root);
     }
 
-    return true;
+    return ret;
 }
 
 static int parse_scan(const char *data,char *msg)
