@@ -1,5 +1,5 @@
 #include "network.h"
-
+#include "ethernet.h"
 
 int Ethernet_Brodacast_Storm(struct Ethernet_Brodacast_Storm *a)
 {

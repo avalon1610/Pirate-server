@@ -79,9 +79,13 @@ int ARP_Request_Storm(struct ARP_Request_Storm_ARG *a)
     }
 
 	if(space_time)
-		send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
+		{
+			send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
+		}
 	else
-		send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+		{
+			send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+		}
 
     libnet_destroy(l);
     return 1;
@@ -166,9 +170,14 @@ int APR_Host_Reply_Storm(struct APR_Host_Reply_Storm *a)
     }
 	
 	if(space_time)
+		{
 			send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
-		else
+		}
+	else
+		{
 			send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+		}
+
 
 
     libnet_destroy(l);
@@ -914,7 +923,6 @@ int ARP_Cache_Saturation_Storm(struct ARP_Cache_Saturation_Storm *a)
 	u_char *enet_dst=a->enet_dst;
 	char *device=a->device;
 	int storm_size=a->storm_size;
-	int test_time=a->test_time;
 	int space_time=a->space_time;
 	int c;
 	
@@ -938,83 +946,121 @@ int ARP_Cache_Saturation_Storm(struct ARP_Cache_Saturation_Storm *a)
 		  fprintf(stderr, "%s", errbuf);
 		  return 0;;
 	  }
-
+	
 	
 	int send_size=0;
-	while(send_size<storm_size)
-	{
-     /***RAND to create a random ****/
-		 int rand_s_ip=rand();
-		 int rand2=rand();
-		 int rand3=rand();
-		 
-		memcpy(enet_src,&rand2,sizeof(int));
-		memcpy(enet_src+4,&rand3,2);
-		 
-		  t = libnet_build_arp(
-				  ARPHRD_ETHER, 						  /* hardware addr */
-				  ETHERTYPE_IP, 						  /* protocol addr */
-				  6,									  /* hardware addr size */
-				  4,									  /* protocol addr size */
-				  ARPOP_REPLY,							  /* operation type */
-				  enet_src, 							  /* sender hardware addr */
-				  (u_int8_t *)&rand_s_ip,					/* sender protocol addr */
-				  enet_dst, 							  /* target hardware addr */
-				  (u_int8_t *)&d,						  /* target protocol addr */
-				  NULL, 								  /* payload */
-				  0,									  /* payload size */
-				  l,									  /* libnet context */
-				  0);									  /* libnet id */
-		  if (t == -1)
-		  {
-			  fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
-		  }
+	clock_t test;
+	clock_t start=test= clock();
+    clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 
-		t = libnet_build_ethernet(
-        				enet_dst,                        /* 目标主机的MAC地址 */
-        				enet_src,                        /* 发送主机的MAC地址 */
-        				ETHERTYPE_ARP,                        /* 以太网帧类型，这里是ARP */
-        				NULL,
-        				0,
-        				l,
-        				0);
-		 // t = libnet_autobuild_ethernet(
-		//		  enet_dst, 							  /* ethernet destination */
-			//	  ETHERTYPE_ARP,						  /* protocol type */
-			//	  l);									  /* libnet handle */
-		  if (t == -1)
-		  {
-			  fprintf(stderr, "Can't build ethernet header: %s\n",
-					  libnet_geterror(l));
-			  return 0;
-
-		  }
-
-
-		  if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-		  {
-			  fprintf(stderr, "%s", libnet_geterror(l));
-		  }
-		  else
-		  {
-		  
-		  	send_size=send_size+packet_s;
-			libnet_adv_free_packet(l, packet);
-		  }
-		  c = libnet_write(l);
-		  	if (c == -1)
-		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
-		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
-		  
-		  libnet_clear_packet(l);
-		  
-	}
+	int R=0;
+	srand((unsigned)time(NULL));
+	
+while((end-start)/CLOCKS_PER_SEC<=STORM_TIME){
+	if(space_time && (end-test)/CLOCKS_PER_SEC == space_time )
+		{
+			ARP_Cache_Send(l,enet_dst,storm_size,d);
+			test=clock();
+		}
+	else
+		{
+			
+			if((end-test)/CLOCKS_PER_SEC == R)
+				{	
+				
+					ARP_Cache_Send(l,enet_dst,storm_size,d)	;
+					test=clock();
+					R=rand()%10;
+					
+				}
+		}
+		end =clock();
+}
+	
+	libnet_destroy(l);		 
 	return 1;
+}
+
+int ARP_Cache_Send(libnet_t *l,u_char *enet_dst,int storm_size,u_int32_t d)
+{
+	u_char enet_src[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	int send_size=0;
+	int c;
+	libnet_ptag_t t;
+    u_int8_t *packet;
+    u_int32_t packet_s;
+while(send_size<= storm_size)
+{
+	int rand_s_ip=rand();
+	int rand2=rand();
+	int rand3=rand();
+   	memcpy(enet_src,&rand2,sizeof(int));
+   	memcpy(enet_src+4,&rand3,2);
+	
+	 t = libnet_build_arp(
+			 ARPHRD_ETHER,							 /* hardware addr */
+			 ETHERTYPE_IP,							 /* protocol addr */
+			 6, 									 /* hardware addr size */
+			 4, 									 /* protocol addr size */
+			 ARPOP_REPLY,							 /* operation type */
+			 enet_src,								 /* sender hardware addr */
+			 (u_int8_t *)&rand_s_ip,				   /* sender protocol addr */
+			 enet_dst,								 /* target hardware addr */
+			 (u_int8_t *)&d,						 /* target protocol addr */
+			 NULL,									 /* payload */
+			 0, 									 /* payload size */
+			 l, 									 /* libnet context */
+			 0);									 /* libnet id */
+	 if (t == -1)
+	 {
+		 fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+	 }
+
+   	t = libnet_build_ethernet(
+				   enet_dst,						/* 目标主机的MAC地址 */
+				   enet_src,						/* 发送主机的MAC地址 */
+				   ETHERTYPE_ARP,						 /* 以太网帧类型，这里是ARP */
+				   NULL,
+				   0,
+				   l,
+				   0);
+	// t = libnet_autobuild_ethernet(
+   //		 enet_dst,								 /* ethernet destination */
+	   //	 ETHERTYPE_ARP, 						 /* protocol type */
+	   //	 l);									 /* libnet handle */
+	 if (t == -1)
+	 {
+		 fprintf(stderr, "Can't build ethernet header: %s\n",
+				 libnet_geterror(l));
+		 return 0;
+
+	 }
+
+
+	 if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
+	 {
+		 fprintf(stderr, "%s", libnet_geterror(l));
+	 }
+	 else
+	 {
+	 
+	   send_size=send_size+packet_s;
+	   libnet_adv_free_packet(l, packet);
+	 }
+	 c = libnet_write(l);
+	   if (c == -1)
+	   {
+		   fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+	   }
+	   else
+	   {
+		   //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
+			//		 "check the wire.\n", c, libnet_cq_getlabel(l));
+	   }
+	 
+	 libnet_clear_packet(l);
+
+}
+
 }
 

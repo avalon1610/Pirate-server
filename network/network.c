@@ -1,10 +1,12 @@
-#define bool int
-#define true 1
-#define false 0
-#include  "network.h"
-#include  "../include/comm.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 #include <pthread.h>
+#include "arp.h"
+#include "ethernet.h"
+#include  "network.h"
+#include  "../include/comm.h"
+
 
 
 
@@ -26,7 +28,7 @@ int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_ti
 				l=rand()%10;
 				if((clock()-s_e_t)/CLOCKS_PER_SEC==R)
 					{	
-					send_storm(lib_net,size,pcap_size,storm_time); 
+					send_storm(lib_net,size,pcap_size); 
 					s_e_t=clock();
 					}
 					end = (clock() - start)/CLOCKS_PER_SEC;
@@ -39,20 +41,21 @@ int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_ti
 
 int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,int set_time)
 {
-	
-	srand((unsigned)time(NULL));
 	int l;
 	clock_t s_e_t=0;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
+
 	while(end <= storm_time)
 			{	
-				l=rand()%10;
+			
 				if((clock()-s_e_t)/CLOCKS_PER_SEC==set_time)
 					{	
-					send_storm(lib_net,size,pcap_size,storm_time); 
+					
+					send_storm(lib_net,size,pcap_size); 
 					s_e_t=clock();
 					}
+			
 					end = (clock() - start)/CLOCKS_PER_SEC;
 				
 					
@@ -62,13 +65,12 @@ int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,
 }
 
 
-int send_storm(libnet_t *lib_net,int size,int pcap_size,int storm_time)
+int send_storm(libnet_t *lib_net,int size,int pcap_size)
 {	int c;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 
-	while(end<storm_time)
-		{
+	
 		int send=0;
 		while(send<size)
 			{
@@ -82,7 +84,7 @@ int send_storm(libnet_t *lib_net,int size,int pcap_size,int storm_time)
 			}
 
 		end = (clock() - start)/CLOCKS_PER_SEC;
-		}
+	
 	return 1;
 
 }
@@ -179,10 +181,20 @@ void start_test()
 	.enet_src={0x01,0x02,0x03,0x04,0x05,0x06},
 	.enet_dst={0x01,0x02,0x03,0x04,0x05,0x06},
 	.device="eth0",
-	.storm_size=10000,
-	.test_time=20,
-	.space_time=2
+	.storm_size=1000,
+	.test_time=60,
+	.space_time=0
 	};
+
+	struct ARP_Cache_Saturation_Storm b={
+	.ip_dst="192.168.1.101",
+	.enet_dst={0x01,0x02,0x03,0x04,0x05,0x06},
+	.device="eth0",
+	.storm_size=1000,
+	.test_time=60,
+	.space_time=0
+	};
+
 	
 	LIST_ENTRY runnig_list;
 	InitializeListHead(&runnig_list);
@@ -212,7 +224,10 @@ void start_test()
 		switch(entry->type){
 		case ARP_REQUEST_STORM :
 			pthread_create (&thread_id, NULL, (void *)ARP_Request_Storm, (void *)&a); 
-
+			pthread_join (thread_id, NULL);
+			break;
+		case ARP_CACHE_SATURATION_STORM:
+			pthread_create (&thread_id, NULL, (void *)ARP_Cache_Saturation_Storm, (void *)&b); 
 			pthread_join (thread_id, NULL);
 			break;
 		//case 
