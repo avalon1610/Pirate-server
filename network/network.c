@@ -152,7 +152,7 @@ void start_test()
 		entry = CONTAINING_RECORD(current,MISSION,node);
 		switch(entry->type){
 		case ARP_REQUEST_STORM :
-			pthread_create (&thread_id, NULL, &ARP_Request_Storm, (void *)&a); 
+			pthread_create (&thread_id, NULL, (void *)ARP_Request_Storm, (void *)&a); 
 			pthread_join (thread_id, NULL);
 			break;
 		//case 

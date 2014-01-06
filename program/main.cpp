@@ -6,10 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <pthread.h>
 #include "lib_ui.h"
-#include "comm.h"
 #include "network.h"
+#include "comm.h"
 
 
 LIST_ENTRY mission_list;

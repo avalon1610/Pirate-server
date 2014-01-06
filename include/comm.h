@@ -5,6 +5,10 @@
 #include "cJSON.h"
 
 #define DEFAULT_STR_LEN 16
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum _MISSION_TYPE
 {
     ARP_REQUEST_STORM = 0,
@@ -37,6 +41,13 @@ typedef struct _ENV {
     unsigned char src_mac[6];
     unsigned char dst_mac[6];
 } ENV,*PENV; 
+
+
+int DbgPrint(const char *format,...);
+
+#ifdef __cplusplus
+};
+#endif // c++
 
 #endif
 
