@@ -3,10 +3,6 @@
 #include <string.h>
 #include <pthread.h>
 
-#define bool int
-#define true 1
-#define false 0
-
 #include "e4c_lite.h"
 #include "cJSON.h"
 #include "mongoose.h"

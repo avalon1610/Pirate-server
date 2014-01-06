@@ -1,6 +1,10 @@
 #ifndef COMM_H_
 #define COMM_H_
 
+#define true 1
+#define false 0
+#define bool int
+
 #include "mylist.h"
 #include "cJSON.h"
 
