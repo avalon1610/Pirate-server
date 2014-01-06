@@ -17,17 +17,6 @@ extern pthread_rwlock_t rwlock;
 extern pthread_rwlock_t rwlock_env;
 extern ENV *env;
 
-int DbgPrint(const char *format,...)
-{
-#ifdef Debug
-    va_list args;
-    va_start(args,format);
-    vprintf(format,args);
-    va_end(args);
-#endif
-    return 0;
-}
-
 static int parse_mission(const char *data,char *msg)
 {
     char *param;

@@ -1,6 +1,6 @@
-SRC = mongoose.c lib_ui.c 
-LIB = ../lib/libui.a
-OBJ = mongoose.o lib_ui.o
+SRC = comm.c cJSON.c e4c_lite.c 
+LIB = ../lib/libcomm.a
+OBJ = comm.o cJSON.o e4c_lite.o
 CFLAGS = -I../include
 
 CC = gcc
