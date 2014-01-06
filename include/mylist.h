@@ -1,11 +1,19 @@
 #ifndef _MY_LIST_H_
 #define _MY_LIST_H_
 
+#define true 1
+#define false 0
+#define bool int
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef unsigned long ULONG_PTR,*PULONG_PTR;
+
 #define CONTAINING_RECORD(address,type,field) ((type *)(\
                                             (char *)(address)-\
                                             (ULONG_PTR)(&((type *)0)->field)))
-
 typedef struct _LIST_ENTRY {
     struct _LIST_ENTRY *Flink;
     struct _LIST_ENTRY *Blink;
@@ -88,5 +96,9 @@ inline void AppendTailList(PLIST_ENTRY ListHead,PLIST_ENTRY ListToAppend)
     ListToAppend->Blink->Flink = ListHead;
     ListToAppend->Blink = ListEnd;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

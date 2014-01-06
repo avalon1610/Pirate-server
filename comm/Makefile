@@ -1,4 +1,4 @@
-SRC = comm.c cJSON.c e4c_lite.c 
+SRC = comm.c cJSON.c e4c_lite.c
 LIB = ../lib/libcomm.a
 OBJ = comm.o cJSON.o e4c_lite.o
 CFLAGS = -I../include
