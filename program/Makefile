@@ -1,6 +1,6 @@
 SRC = main.cpp
 TARGET = pppp
-CFLAG = -g -I../ui -I../include -I../network -DDebug
+CFLAG = -g -I../ui -I../include -I../network -DDEBUG -DE4C_THREADSAFE
 LDFLAG = -L../lib -lui -pthread -lnetwork -lnet -lcomm
 SHELL = /bin/sh
 LIB_DIR = ../lib/
