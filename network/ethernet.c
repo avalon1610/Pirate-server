@@ -1,8 +1,11 @@
 #include "network.h"
 
 
-int Ethernet_Brodacast_Storm(u_char *enet_src,char *device,int storm_size)
+int Ethernet_Brodacast_Storm(struct Ethernet_Brodacast_Storm *a)
 {
+	u_char *enet_src=a->enet_src;
+	char *device=a->device;
+	int storm_size=a->storm_size;
 
 	int c;
 	int send_size=0;
@@ -74,9 +77,12 @@ return 1;
 
 
 
-int Ethernet_Multicast_Storm(u_char *enet_src,char *device,int storm_size)
+int Ethernet_Multicast_Storm(struct Ethernet_Multicast_Storm *a)
 {
-
+	u_char *enet_src=a->enet_src;
+	char *device=a->device;
+	int storm_size=a->storm_size;
+		
 	int c;
 	int send_size=0;
    // u_int32_t i;
@@ -149,8 +155,12 @@ return 1;
 }
 
 
-int Ethernet_Unicast_Storm(u_char *enet_dst,u_char *enet_src,char *device,int storm_size)
+int Ethernet_Unicast_Storm(struct Ethernet_Unicast_Storm *a)
 {
+	u_char *enet_dst=a->enet_dst;
+	u_char *enet_src=a->enet_src;
+	char *device=a->device;
+	int storm_size=a->storm_size;
 
 	int c;
 	int send_size=0;
@@ -224,8 +234,12 @@ int Ethernet_Unicast_Storm(u_char *enet_dst,u_char *enet_src,char *device,int st
 }
 
 
-int Ethernet_Grammar(u_char *enet_dst,u_char *enet_src,char *device)
+int Ethernet_Grammar(struct Ethernet_Grammar *a)
 {
+	u_char *enet_dst=a->enet_dst;
+	u_char *enet_src=a->enet_src;
+	char *device=a->device;
+
 
 	int c;
 	int j;
@@ -311,8 +325,11 @@ return 1;
 
 }
 
-int Ethernet_Fuzzer(u_char *enet_dst,u_char *enet_src,char *device)
+int Ethernet_Fuzzer(struct Ethernet_Fuzzer *a)
 {
+	u_char *enet_dst=a->enet_dst;
+	u_char *enet_src=a->enet_src;
+	char *device=a->device;
 
 	int c;
 	int send_size=0;

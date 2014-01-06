@@ -38,6 +38,7 @@ void usage(char *);
 
 int icmp_storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *enet_dst,char *device,int storm_size)
 {
+int last=1;
     libnet_t *l = NULL;
     u_long src_ip, dst_ip ;
     u_long count = 10;
@@ -135,7 +136,7 @@ int icmp_storm(u_char *ip_dst,u_char *ip_src,u_char *enet_src,u_char *enet_dst,c
 	        		fprintf(stderr, "packet size: %d\n", packet_s);
 	        		libnet_adv_free_packet(l, packet);
 	    		}
-			send_storm(l,storm_size,packet_s);
+			send_storm(l,storm_size,packet_s,last);
 			
 	        if (c == -1)
 	        {

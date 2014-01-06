@@ -12,19 +12,76 @@
 extern LIST_ENTRY mission_list;
 extern pthread_rwlock_t rwlock;
 
+int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_time)
+{
+	int R;
+	srand((unsigned)time(NULL));
+	R=rand()%5;
+	int l;
+	clock_t s_e_t=0;
+	clock_t start = clock();
+    clock_t end = (clock() - start)/CLOCKS_PER_SEC;
+	while(end<=storm_time)
+			{	
+				l=rand()%10;
+				if((clock()-s_e_t)/CLOCKS_PER_SEC==R)
+					{	
+					send_storm(lib_net,size,pcap_size,storm_time); 
+					s_e_t=clock();
+					}
+					end = (clock() - start)/CLOCKS_PER_SEC;
+				
+					
+			}
+	return 1;
+	
+}
 
-int send_storm(libnet_t *lib_net,int size,int pcap_size)
+int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,int set_time)
+{
+	
+	srand((unsigned)time(NULL));
+	int l;
+	clock_t s_e_t=0;
+	clock_t start = clock();
+    clock_t end = (clock() - start)/CLOCKS_PER_SEC;
+	while(end <= storm_time)
+			{	
+				l=rand()%10;
+				if((clock()-s_e_t)/CLOCKS_PER_SEC==set_time)
+					{	
+					send_storm(lib_net,size,pcap_size,storm_time); 
+					s_e_t=clock();
+					}
+					end = (clock() - start)/CLOCKS_PER_SEC;
+				
+					
+			}
+
+	return 1;
+}
+
+
+int send_storm(libnet_t *lib_net,int size,int pcap_size,int storm_time)
 {	int c;
-	int send=0;
-	while(send<size)
+	clock_t start = clock();
+    clock_t end = (clock() - start)/CLOCKS_PER_SEC;
+
+	while(end<storm_time)
 		{
-			c =	libnet_write(lib_net);
-			send=send+pcap_size;
-			  if (c == -1)
-    		{
-       			 fprintf(stderr, "Write error: %s\n", libnet_geterror(lib_net));
-        			return -1;
-    		}
+		int send=0;
+		while(send<size)
+			{
+				c =	libnet_write(lib_net);
+				send=send+pcap_size;
+				  if (c == -1)
+	    		{
+	       			 fprintf(stderr, "Write error: %s\n", libnet_geterror(lib_net));
+	        			return -1;
+	    		}
+			}
+
+		end = (clock() - start)/CLOCKS_PER_SEC;
 		}
 	return 1;
 
@@ -122,7 +179,9 @@ void start_test()
 	.enet_src={0x01,0x02,0x03,0x04,0x05,0x06},
 	.enet_dst={0x01,0x02,0x03,0x04,0x05,0x06},
 	.device="eth0",
-	.storm_size=10000
+	.storm_size=10000,
+	.test_time=20,
+	.space_time=2
 	};
 	
 	LIST_ENTRY runnig_list;
@@ -152,7 +211,7 @@ void start_test()
 		entry = CONTAINING_RECORD(current,MISSION,node);
 		switch(entry->type){
 		case ARP_REQUEST_STORM :
-			pthread_create (&thread_id, NULL, &ARP_Request_Storm, (void *)&a); 
+			pthread_create (&thread_id, NULL, ARP_Request_Storm, (void *)&a); 
 			pthread_join (thread_id, NULL);
 			break;
 		//case 
