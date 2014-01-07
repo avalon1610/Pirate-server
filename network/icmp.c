@@ -136,7 +136,7 @@ int last=1;
 	        		fprintf(stderr, "packet size: %d\n", packet_s);
 	        		libnet_adv_free_packet(l, packet);
 	    		}
-			send_storm(l,storm_size,packet_s,last);
+			//send_storm(l,storm_size,packet_s,last);
 			
 	        if (c == -1)
 	        {
