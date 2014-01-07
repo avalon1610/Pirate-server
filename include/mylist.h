@@ -5,6 +5,8 @@
 #define false 0
 #define bool int
 
+#define STATIC static
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,16 +21,19 @@ typedef struct _LIST_ENTRY {
     struct _LIST_ENTRY *Blink;
 } LIST_ENTRY,*PLIST_ENTRY;
 
+STATIC
 inline void InitializeListHead(PLIST_ENTRY ListHead)
 {
     ListHead->Flink = ListHead->Blink = ListHead;
 }
 
+STATIC
 inline bool IsListEmpty(const LIST_ENTRY *ListHead)
 {
     return (bool)(ListHead->Flink == ListHead);
 }
 
+STATIC
 inline bool RemoveEntryList(PLIST_ENTRY Entry)
 {
     PLIST_ENTRY Blink;
@@ -41,6 +46,7 @@ inline bool RemoveEntryList(PLIST_ENTRY Entry)
     return (bool)(Flink == Blink);
 }
 
+STATIC
 inline PLIST_ENTRY RemoveHeadList(PLIST_ENTRY ListHead)
 {
     PLIST_ENTRY Flink;
@@ -53,6 +59,7 @@ inline PLIST_ENTRY RemoveHeadList(PLIST_ENTRY ListHead)
     return Entry;
 }
 
+STATIC
 inline PLIST_ENTRY RemoveTailList(PLIST_ENTRY ListHead)
 {
     PLIST_ENTRY Blink;
@@ -65,6 +72,7 @@ inline PLIST_ENTRY RemoveTailList(PLIST_ENTRY ListHead)
     return Entry;
 }
 
+STATIC
 inline void InsertTailList(PLIST_ENTRY ListHead,PLIST_ENTRY Entry)
 {
     PLIST_ENTRY Blink;
@@ -76,6 +84,7 @@ inline void InsertTailList(PLIST_ENTRY ListHead,PLIST_ENTRY Entry)
     ListHead->Blink = Entry;
 }
 
+STATIC
 inline void InsertHeadList(PLIST_ENTRY ListHead,PLIST_ENTRY Entry)
 {
     PLIST_ENTRY Flink;
@@ -87,6 +96,7 @@ inline void InsertHeadList(PLIST_ENTRY ListHead,PLIST_ENTRY Entry)
     ListHead->Flink = Entry;
 }
 
+STATIC
 inline void AppendTailList(PLIST_ENTRY ListHead,PLIST_ENTRY ListToAppend)
 {
     PLIST_ENTRY ListEnd = ListHead->Blink;

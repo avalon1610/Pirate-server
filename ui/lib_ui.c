@@ -7,6 +7,7 @@
 #include "cJSON.h"
 #include "mongoose.h"
 #include "comm.h"
+#include "network.h"
 
 extern LIST_ENTRY mission_list;
 extern pthread_rwlock_t rwlock;
@@ -175,6 +176,8 @@ static int parse_runner(const char *data,char *msg)
         cJSON_Delete(root);
     }
 
+    if (ret)
+        start_test();
     return ret;
 }
 

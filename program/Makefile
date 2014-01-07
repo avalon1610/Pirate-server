@@ -1,7 +1,7 @@
-SRC = main.cpp
+SRC = main.c
 TARGET = pppp
 CFLAG = -g -I../ui -I../include -I../network -DDEBUG -DE4C_THREADSAFE
-LDFLAG = -L../lib -lui -pthread -lnetwork -lnet -lcomm
+LDFLAG = -L../lib -lc -lm -lui -pthread -lnetwork -lnet -lcomm
 SHELL = /bin/sh
 LIB_DIR = ../lib/
 BIN_DIR = ../bin/
@@ -12,7 +12,7 @@ UI_LIB = ../lib/libui.a
 NET_DIR = ../network/
 NET_LIB = ../lib/libnetwork.a
 
-CC = g++
+CC = gcc
 AR = ar rc
 RM = rm -f
 
