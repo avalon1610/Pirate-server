@@ -32,19 +32,8 @@ void Uninit()
 
 int main()
 { 
-	struct _MISSION *mission;
-
     Init();
-    //run_server();
-
-	mission = (MISSION *)malloc(sizeof(MISSION));
-	mission->type=ARP_CACHE_SATURATION_STORM;
-	mission->status=RUNNING;
-	 pthread_rwlock_wrlock(&rwlock);
-    InsertTailList(&mission_list,&mission->node);
-    pthread_rwlock_unlock(&rwlock);
-	start_test();
-	
+    run_server();
     Uninit();
     return 0;
 }
