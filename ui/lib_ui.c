@@ -3,7 +3,7 @@
 #include <string.h>
 #include <pthread.h>
 
-#include "e4c_lite.h"
+#include "e4c.h"
 #include "cJSON.h"
 #include "mongoose.h"
 #include "comm.h"
@@ -177,7 +177,13 @@ static int parse_runner(const char *data,char *msg)
     }
 
     if (ret)
-        start_test();
+    {
+        if (pthread_create(NULL,NULL,(void *)start_test,NULL))
+        {
+            strcpy(msg,"Create thread failed");
+            ret = false;
+        }
+    }
     return ret;
 }
 

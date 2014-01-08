@@ -1,7 +1,7 @@
 SRC = mongoose.c lib_ui.c 
 LIB = ../lib/libui.a
 OBJ = mongoose.o lib_ui.o
-CFLAGS = -I../include -I../network
+CFLAGS = -DE4C_THREADSAFE -I../include -I../network
 
 CC = gcc
 AR = ar rc
