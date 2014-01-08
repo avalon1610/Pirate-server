@@ -3,6 +3,7 @@
 
 #include "mylist.h"
 #include "cJSON.h"
+#include <pthread.h>
 
 #define DEFAULT_STR_LEN 16
 #ifdef __cplusplus
@@ -20,19 +21,25 @@ typedef enum _MISSION_TYPE
 typedef enum _MISSION_STATUS
 {
     RUNNING = 0,
-    PAUSE,
-    STOP,
+    PAUSED,
+    STOPPED,
     ERROR,
     END
 } MISSION_STATUS;
 
 typedef enum _SCAN_STATUS
 {
-    RUNNING = 0,
-    PAUSE,
-    STOP,
-    ERROR
+    S_RUNNING = 0,
+    S_PAUSED,
+    S_STOPPED,
+    S_ERROR
 } SCAN_STATUS;
+
+typedef enum _SCAN_TYPE
+{
+    TCP_SCAN,
+    UDP_SCAN
+} SCAN_TYPE;
 
 typedef struct _MISSION
 {
@@ -54,9 +61,9 @@ typedef struct _ENV {
 
 typedef enum _COMMAND_TYPE
 {
-    SCAN = 0,
-    MISSION,
-    ANALYIZE
+    T_SCAN = 0,
+    T_MISSION,
+    T_ANALYIZE
 } COMMAND_TYPE;
 
 typedef enum _COMMAND_ORDER
@@ -75,8 +82,8 @@ typedef struct _COMMAND
     {
         MISSION_TYPE m_type;
         SCAN_TYPE s_type;
-    }
-    bool ALL; 
+    };
+    bool ALLGO; 
 } COMMAND,*PCOMMAND;
 
 typedef struct _RUNNING_MISSION{
@@ -84,7 +91,7 @@ typedef struct _RUNNING_MISSION{
 	int mission_start_time;
 	MISSION_STATUS status;
 	char miss_name[10];
-}RUNNING_MISSION,*RUNNING_MISSION;
+}RUNNING_MISSION,*PRUNNING_MISSION;
 
 int DbgPrint(const char *format,...);
 int command_control(COMMAND cmd);

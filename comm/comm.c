@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "comm.h"
+#include "network.h"
+
+extern RUNNING_MISSION *Running;
 
 int DbgPrint(const char *format,...)
 {
@@ -17,14 +20,14 @@ int command_control(COMMAND cmd)
 {
     switch(cmd.type)
     {
-        case SCAN:
+        case T_SCAN:
             break;
-        case MISSION:
-            switch(cmd.order):
+        case T_MISSION:
+            switch(cmd.order)
             {
                 case START:
                 case RESUME:
-                    if (Running->running_thread_id == NULL)
+                    if (Running->running_thread_id == 0) 
                         pthread_create(NULL,NULL,TEST_WORKDING,&cmd);
                     break;
                 case PAUSE:
