@@ -24,11 +24,12 @@ int command_control(COMMAND cmd)
             {
                 case START:
                 case RESUME:
-                    if (Running.running_thread)
-                    pthread
+                    if (Running->running_thread_id == NULL)
+                        pthread_create(NULL,NULL,TEST_WORKDING,&cmd);
                     break;
                 case PAUSE:
                 case STOP:
+                    
                     break;
                 default:
                     break;
