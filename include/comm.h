@@ -22,7 +22,8 @@ typedef enum _MISSION_STATUS
     RUNNING = 0,
     PAUSE,
     STOP,
-    ERROR
+    ERROR,
+    END
 } MISSION_STATUS;
 
 typedef struct _MISSION
@@ -40,8 +41,15 @@ typedef struct _ENV {
     unsigned char target2[16];
     unsigned char src_mac[6];
     unsigned char dst_mac[6];
+	unsigned char device[10];
 } ENV,*PENV; 
 
+typedef struct _RUNNING_MISSION{
+	pthread_t running_thread_id;
+	int mission_start_time;
+	MISSION_STATUS status;
+	char miss_name[10];
+}RUNNING_MISSION,*RUNNING_MISSION;
 
 int DbgPrint(const char *format,...);
 
