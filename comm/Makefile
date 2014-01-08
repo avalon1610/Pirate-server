@@ -1,7 +1,7 @@
 SRC = comm.c cJSON.c e4c.c
 LIB = ../lib/libcomm.a
 OBJ = comm.o cJSON.o e4c.o
-CFLAGS = -I../include
+CFLAGS = -I../include -DDEBUG
 
 CC = gcc
 AR = ar rc
