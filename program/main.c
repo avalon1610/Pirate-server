@@ -15,19 +15,24 @@
 LIST_ENTRY mission_list;
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t rwlock_env = PTHREAD_RWLOCK_INITIALIZER;
+pthread_rwlock_t rwlock_run = PTHREAD_RWLOCK_INITIALIZER;
 ENV *env;
+RUNNING_MISSION *Running;
 
 void Init()
 {
     InitializeListHead(&mission_list);
     env = (ENV *)malloc(sizeof(ENV));
     memset(env,0,sizeof(ENV));
+	Running = (RUNNING_MISSION *)malloc(sizeof(RUNNING_MISSION));
+	memset(Running,0,sizeof(RUNNING_MISSION));
 }
 
 void Uninit()
 {
     pthread_rwlock_destroy(&rwlock);
     free(env);
+	free(Running);
 }
 
 int main()
