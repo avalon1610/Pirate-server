@@ -95,7 +95,6 @@ typedef struct _RUNNING_MISSION{
 }RUNNING_MISSION,*PRUNNING_MISSION;
 
 int DbgPrint(const char *format,...);
-int command_control(COMMAND cmd);
 
 #ifdef __cplusplus
 };

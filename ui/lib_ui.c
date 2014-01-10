@@ -13,6 +13,34 @@ extern LIST_ENTRY mission_list;
 extern pthread_rwlock_t rwlock;
 extern pthread_rwlock_t rwlock_env;
 extern ENV *env;
+extern RUNNING_MISSION *Running;
+
+int command_control(COMMAND cmd)
+{
+    switch(cmd.type)
+    {
+        case T_SCAN:
+            break;
+        case T_MISSION:
+            switch(cmd.order)
+            {
+                case START:
+                case RESUME:
+                    if (Running->running_thread_id == 0) 
+                        pthread_create(NULL,NULL,(void *)Test_Work,&cmd);
+                    break;
+                case PAUSE:
+                case STOP:
+                    
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
 
 static int parse_mission(const char *data,char *msg)
 {
@@ -213,7 +241,6 @@ static int scan_setup(struct mg_connection *conn)
 
 int run_server(void)
 {	
-
     struct mg_server *server;
     
     // Create and configure the server
