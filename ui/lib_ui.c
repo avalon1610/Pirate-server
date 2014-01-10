@@ -95,7 +95,7 @@ typedef int(*SETUP_FUNCTION)(const char *,char *);
 static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
 {
     char *reply_header = "HTTP/1.0 200 OK\r\n"
-        "Access-Control-Allow-Origin:http://127.0.0.1\r\n\r\n";
+        "Access-Control-Allow-Origin:http://";
     char reply[256] = {0};
     char error_msg[32] = {0};
     char *post_data = get_post_data(conn);
@@ -103,9 +103,9 @@ static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
         return;
 
     if (func(post_data,error_msg))
-        sprintf(reply,"%sOK",reply_header);
+        sprintf(reply,"%s%s\r\n\r\nOK",conn->remote_ip,reply_header);
     else
-        sprintf(reply,"%s%s",reply_header,error_msg);
+        sprintf(reply,"%s%s\r\n\r\n%s",conn->remote_ip,reply_header,error_msg);
 
     mg_write(conn,reply,strlen(reply));
     free(post_data);
@@ -187,11 +187,12 @@ static int parse_runner(const char *data,char *msg)
 
     if (ret)
     {
-        //if (pthread_create(NULL,NULL,(void *)start_test,NULL))
-        //{
-         //   strcpy(msg,"Create thread failed");
-        //    ret = false;
-        //}
+        COMMAND cmd;
+        memset(&cmd,0,sizeof(cmd));
+        cmd.type = T_MISSION;
+        cmd.order = status;
+        cmd.m_type = type;
+        command_control(cmd);
     }
     else
         strcpy(msg,"Invalid Parameter");
