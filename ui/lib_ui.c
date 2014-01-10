@@ -3,7 +3,6 @@
 #include <string.h>
 #include <pthread.h>
 
-#include "e4c.h"
 #include "cJSON.h"
 #include "mongoose.h"
 #include "comm.h"
@@ -60,25 +59,22 @@ static int parse_mission(const char *data,char *msg)
     }
     memset(mission,0,sizeof(MISSION));
 
-    try
-    {
-        root = cJSON_Parse(data);
-        type_entry = cJSON_GetObjectItem(root,"mission-type");
-        mission->type = (MISSION_TYPE)(type_entry->valueint);
-        mission->param = root;
-    }
-    catch (RuntimeException)
+    root = cJSON_Parse(data);
+    type_entry = cJSON_GetObjectItem(root,"mission-type");
+    if (type_entry == NULL)
     {
         strcpy(msg,"Invalid Parameter");
         return false;
     }
+
+    mission->type = (MISSION_TYPE)(type_entry->valueint);
+    mission->param = root;
 
     pthread_rwlock_wrlock(&rwlock);
     InsertTailList(&mission_list,&mission->node);
     pthread_rwlock_unlock(&rwlock);
 
     DbgPrint("Add Mission:%d\n",mission->type);
-
     return true;
 }
 
@@ -131,36 +127,32 @@ static int parse_env(const char *data,char *msg)
 
     if (!env)
         return ret;
-    try 
-    {
-        pthread_rwlock_wrlock(&rwlock_env);
-        root = cJSON_Parse(data);
-        temp_str = cJSON_GetObjectItem(root,"host")->valuestring;
-        strcpy(env->host,temp_str);
-        temp_obj_1 = cJSON_GetObjectItem(root,"target1");
-        temp_obj_2 = cJSON_GetObjectItem(root,"target2");
-        if (temp_obj_1 == NULL && temp_obj_2 == NULL)
-            throw(RuntimeException,"NULL Pointer");
-        if (temp_obj_1)
-            strcpy(env->target1,temp_obj_1->valuestring);
-        if (temp_obj_2)
-            strcpy(env->target2,temp_obj_2->valuestring);
-        ret = true;
-    }
-    catch (RuntimeException)
+
+    root = cJSON_Parse(data);
+    temp_str = cJSON_GetObjectItem(root,"host")->valuestring;
+    strcpy(env->host,temp_str);
+    temp_obj_1 = cJSON_GetObjectItem(root,"target1");
+    temp_obj_2 = cJSON_GetObjectItem(root,"target2");
+    if (temp_obj_1 == NULL && temp_obj_2 == NULL)
     {
         strcpy(msg,"Invalid Parameter");
+        goto Cleanup;
     }
-    finally
-    {
-        pthread_rwlock_unlock(&rwlock_env);
-        cJSON_Delete(root);
-    }
-        
+
+    pthread_rwlock_wrlock(&rwlock_env);
+    if (temp_obj_1)
+        strcpy(env->target1,temp_obj_1->valuestring);
+    if (temp_obj_2)
+        strcpy(env->target2,temp_obj_2->valuestring);
+    pthread_rwlock_unlock(&rwlock_env);
+    ret = true;
+
     DbgPrint("Receive Env:\n host:%s\n target1:%s\n target2:%s\n",
            env->host,
            env->target1?env->target1:(unsigned char *)"NULL",
            env->target2?env->target2:(unsigned char *)"NULL");
+Cleanup:
+    cJSON_Delete(root);
     return ret;
 }
 
@@ -175,34 +167,23 @@ static int parse_runner(const char *data,char *msg)
     if (data == NULL)
         return ret;
 
-    try
-    {
-        pthread_rwlock_wrlock(&rwlock);
-        root = cJSON_Parse(data);
-        status = cJSON_GetObjectItem(root,"status")->valueint;
-        type = cJSON_GetObjectItem(root,"type")->valueint;
+    root = cJSON_Parse(data);
+    status = cJSON_GetObjectItem(root,"status")->valueint;
+    type = cJSON_GetObjectItem(root,"type")->valueint;
 
-        while (current != &mission_list)
-        {
-            entry = CONTAINING_RECORD(current,MISSION,node);
-            if (entry->type == type)
-            {
-                entry->status = status;
-                ret = true;
-                break;
-            }
-            current = current->Flink;
-        }
-    }
-    catch (RuntimeException)
-    {   
-        strcpy(msg,"Invalid Parameter");
-    }
-    finally
+    pthread_rwlock_wrlock(&rwlock);
+    while (current != &mission_list)
     {
-        pthread_rwlock_unlock(&rwlock);
-        cJSON_Delete(root);
+        entry = CONTAINING_RECORD(current,MISSION,node);
+        if (entry->type == type)
+        {
+            entry->status = status;
+            ret = true;
+            break;
+        }
+        current = current->Flink;
     }
+    pthread_rwlock_unlock(&rwlock);
 
     if (ret)
     {
@@ -212,6 +193,11 @@ static int parse_runner(const char *data,char *msg)
         //    ret = false;
         //}
     }
+    else
+        strcpy(msg,"Invalid Parameter");
+
+Cleanup:
+    cJSON_Delete(root);
     return ret;
 }
 
