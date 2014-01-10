@@ -95,17 +95,18 @@ typedef int(*SETUP_FUNCTION)(const char *,char *);
 static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
 {
     char *reply_header = "HTTP/1.0 200 OK\r\n"
-        "Access-Control-Allow-Origin:http://";
+        "Access-Control-Allow-Origin:";
     char reply[256] = {0};
     char error_msg[32] = {0};
     char *post_data = get_post_data(conn);
+    char *origin = mg_get_header(conn,"Origin");
     if (func == NULL)
         return;
 
     if (func(post_data,error_msg))
-        sprintf(reply,"%s%s\r\n\r\nOK",conn->remote_ip,reply_header);
+        sprintf(reply,"%s%s\r\n\r\nOK",reply_header,origin);
     else
-        sprintf(reply,"%s%s\r\n\r\n%s",conn->remote_ip,reply_header,error_msg);
+        sprintf(reply,"%s%s\r\n\r\n%s",reply_header,origin,error_msg);
 
     mg_write(conn,reply,strlen(reply));
     free(post_data);
