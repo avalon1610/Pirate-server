@@ -95,7 +95,7 @@ typedef int(*SETUP_FUNCTION)(const char *,char *);
 static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
 {
     char *reply_header = "HTTP/1.0 200 OK\r\n"
-        "Access-Control-Allow-Origin:http://127.0.0.1\r\n\r\n";
+        "Access-Control-Allow-Origin:http://192.168.1.103\r\n\r\n";
     char reply[256] = {0};
     char error_msg[32] = {0};
     char *post_data = get_post_data(conn);

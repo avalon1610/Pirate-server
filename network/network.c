@@ -206,7 +206,6 @@ void Test_MISS(MISSION *mission)
 						memcpy(a->device,env->device,6);
 						pthread_rwlock_unlock(&rwlock_env); 
 						a->storm_size=cJSON_GetObjectItem(mission->param,"storm_size")->valueint;
-						a->test_time=cJSON_GetObjectItem(mission->param,"test_time")->valueint;
 						a->space_time=cJSON_GetObjectItem(mission->param,"space_time")->valueint;
 						pthread_create (&thread_id, NULL, (void *)ARP_Request_Storm, (void *)&a); 
 						pthread_join (thread_id, NULL);

@@ -9,7 +9,7 @@
 
 int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 {
-	
+	DbgPrint("START TEST:ARP_Request_Storm \n");
 	RUNING_MISSION_W(pthread_self(),RUNNING,clock(),ARP_REQUEST_STORM_);
 
 	u_char *ip_dst=a->ip_dst;
@@ -35,7 +35,7 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 				errbuf);								/* errbuf */
 	if (l == NULL)
    	{
-	   fprintf(stderr, "%s", errbuf);
+	   DbgPrint( "%s", errbuf);
 	   return 0;
    	}
    	else
@@ -58,7 +58,7 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 	            0);                                     /* libnet id */
     if (t == -1)
     {
-        fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+        DbgPrint("Can't build ARP header: %s\n", libnet_geterror(l));
         return 0;
     }
     t = libnet_autobuild_ethernet(
@@ -73,11 +73,11 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
     }
     if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
     {
-        fprintf(stderr, "%s", libnet_geterror(l));
+        DbgPrint("%s", libnet_geterror(l));
     }
     else
     {
-        fprintf(stderr, "packet size: %d\n", packet_s);
+        DbgPrint("packet size: %d\n", packet_s);
         libnet_adv_free_packet(l, packet);
     }
 
