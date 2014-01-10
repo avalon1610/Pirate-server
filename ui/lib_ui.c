@@ -178,11 +178,11 @@ static int parse_runner(const char *data,char *msg)
 
     if (ret)
     {
-        if (pthread_create(NULL,NULL,(void *)start_test,NULL))
-        {
-            strcpy(msg,"Create thread failed");
-            ret = false;
-        }
+        //if (pthread_create(NULL,NULL,(void *)start_test,NULL))
+        //{
+         //   strcpy(msg,"Create thread failed");
+        //    ret = false;
+        //}
     }
     return ret;
 }
@@ -212,7 +212,8 @@ static int scan_setup(struct mg_connection *conn)
 }
 
 int run_server(void)
-{
+{	
+
     struct mg_server *server;
     
     // Create and configure the server

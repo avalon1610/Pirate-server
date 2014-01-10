@@ -1,7 +1,7 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 #include  "/usr/include/libnet.h"
-
+#include "comm.h"
 
 
 #define STORM_TIME 20
@@ -15,11 +15,11 @@ int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,
 
 
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void start_test();
+void Test_Work(COMMAND *a);
 
 #ifdef __cplusplus
 }

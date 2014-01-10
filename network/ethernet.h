@@ -8,7 +8,7 @@ struct Ethernet_Brodacast_Storm
 	u_char enet_src[6];
 	char device[10];
 	int storm_size;
-
+	int space_time;
 };
 
 struct Ethernet_Multicast_Storm
@@ -16,7 +16,7 @@ struct Ethernet_Multicast_Storm
 	u_char enet_src[6];
 	char device[10];
 	int storm_size;
-
+	int space_time;
 };
 
 
@@ -26,7 +26,7 @@ struct Ethernet_Unicast_Storm
 	u_char enet_src[6];
 	char device[10];
 	int storm_size;
-
+	int space_time;
 
 };
 

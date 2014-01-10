@@ -2,7 +2,7 @@
 #define _ARP_H_
 
 
-struct ARP_Request_Storm_ARG
+typedef struct _ARP_REQUEST_STORM
 {
 
 		u_char ip_dst[16];
@@ -14,9 +14,9 @@ struct ARP_Request_Storm_ARG
 		int test_time;
 		int space_time;
 
-};
+}ARP_REQUEST_STORM,*PARP_REQUEST_STORM;
 
-struct APR_Host_Reply_Storm
+typedef struct _APR_HOST_REPLY_STORM
 {
 	u_char ip_dst[16];
 	u_char ip_src[16];
@@ -27,10 +27,10 @@ struct APR_Host_Reply_Storm
 	int test_time;
 	int space_time;
 
-};
+}APR_HOST_REPLY_STORM,*PAPR_HOST_REPLY_STORM;
 
 
-struct ARP_Grammear
+typedef struct _ARP_GRAMMEAR
 {
 	u_char ip_dst[16];
 	u_char enet_src[6];
@@ -38,9 +38,9 @@ struct ARP_Grammear
 	char device[10];
 
 
-};
+}ARP_GRAMMEAR,*PARP_GRAMMEAR;
 
-struct ARP_Cache_Saturation_Storm
+typedef struct _ARP_CACHE_SATURATION_StORM
 {
 	u_char ip_dst[16];
 	u_char enet_dst[6];
@@ -49,11 +49,11 @@ struct ARP_Cache_Saturation_Storm
 	int test_time;
 	int space_time;
 
-};
+}ARP_CACHE_SATURATION_STORM,*PARP_CACHE_SATURATION_STORM;
 
-int ARP_Request_Storm(struct ARP_Request_Storm_ARG *a);
-int APR_Host_Reply_Storm(struct APR_Host_Reply_Storm *a);
-int ARP_Grammear(struct ARP_Grammear *a);
-int ARP_Cache_Saturation_Storm(struct ARP_Cache_Saturation_Storm *a);
+int ARP_Request_Storm(ARP_REQUEST_STORM *a);
+int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a);
+int ARP_Grammear(ARP_GRAMMEAR *a);
+int ARP_Cache_Saturation_Storm(ARP_CACHE_SATURATION_STORM *a);
 
 #endif

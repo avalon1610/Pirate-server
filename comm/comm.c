@@ -28,7 +28,7 @@ int command_control(COMMAND cmd)
                 case START:
                 case RESUME:
                     if (Running->running_thread_id == 0) 
-                        pthread_create(NULL,NULL,TEST_WORKDING,&cmd);
+                        pthread_create(NULL,NULL,Test_Work,&cmd);
                     break;
                 case PAUSE:
                 case STOP:

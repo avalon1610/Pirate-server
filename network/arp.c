@@ -2,12 +2,15 @@
 #include "network.h"
 #include "arp.h"
 #include <time.h>
+#include "comm.h"
 
 
 
 
-int ARP_Request_Storm(struct ARP_Request_Storm_ARG *a)
+int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 {
+	
+	RUNING_MISSION_W(pthread_self(),RUNNING,clock(),ARP_REQUEST_STORM_);
 
 	u_char *ip_dst=a->ip_dst;
 	u_char *ip_src=a->enet_src;
@@ -88,6 +91,7 @@ int ARP_Request_Storm(struct ARP_Request_Storm_ARG *a)
 		}
 
     libnet_destroy(l);
+	RUNING_MISSION_W(0,END,clock(),ARP_REQUEST_STORM_);
     return 1;
 
 
@@ -95,7 +99,7 @@ int ARP_Request_Storm(struct ARP_Request_Storm_ARG *a)
 }
 
 
-int APR_Host_Reply_Storm(struct APR_Host_Reply_Storm *a)
+int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a)
 {
 	u_char *ip_dst=a->ip_dst;
 	u_char *ip_src=a->ip_src;
@@ -187,7 +191,7 @@ int APR_Host_Reply_Storm(struct APR_Host_Reply_Storm *a)
 
 }
 
-int ARP_Grammear(struct ARP_Grammear *a)
+int ARP_Grammear(ARP_GRAMMEAR *a)
 {		
 	u_char *ip_dst=a->ip_dst;
 	u_char *enet_src=a->enet_src;
@@ -916,7 +920,7 @@ int ARP_Grammear(struct ARP_Grammear *a)
 /*ARP Cache Saturation Storm APR¸ßËÙ»º´æ²âÊÔ
 Ö÷Òª²âÊÔ·½Ê½¾ÍÊÇÔÚ·¢·ç±©Êý¾Ý±¨ÎÄµÄÍÍ¬Ê±
 ²»¶ÏµÄ¸Ä±ä±¾ÉíµÄIPµØÖ·ºÍMACµØÖ·*/
-int ARP_Cache_Saturation_Storm(struct ARP_Cache_Saturation_Storm *a)
+int ARP_Cache_Saturation_Storm(ARP_CACHE_SATURATION_STORM *a)
 {
 
 	u_char *ip_dst=a->ip_dst;

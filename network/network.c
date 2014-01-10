@@ -5,7 +5,7 @@
 #include "arp.h"
 #include "ethernet.h"
 #include  "network.h"
-#include  "../include/comm.h"
+#include  "comm.h"
 
 
 
@@ -13,6 +13,11 @@
 
 extern LIST_ENTRY mission_list;
 extern pthread_rwlock_t rwlock;
+extern pthread_rwlock_t rwlock_env;
+extern pthread_rwlock_t rwlock_run;
+extern ENV *env;
+extern RUNNING_MISSION *Running;
+
 
 int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_time)
 {
@@ -171,73 +176,98 @@ void Create_Random(int len,u_char *Rd)
 
 }
 
+void RUNING_MISSION_W(pthread_t thread_id,MISSION_STATUS status,clock_t start_time,MISSION_TYPE name)
+{
+	pthread_rwlock_wrlock(&rwlock_run);
+	Running->running_thread_id=thread_id;
+    Running->status=status;
+	Running->mission_start_time=start_time;
+	Running->type=name;
+	pthread_rwlock_unlock(&rwlock_run);
+}
 
-void start_test()
-{	
 
-	struct ARP_Request_Storm_ARG a={
-	.ip_dst="192.168.1.101",
-	.ip_src="192.168.1.102",
-	.enet_src={0x01,0x02,0x03,0x04,0x05,0x06},
-	.enet_dst={0x01,0x02,0x03,0x04,0x05,0x06},
-	.device="eth0",
-	.storm_size=1000,
-	.test_time=60,
-	.space_time=0
-	};
 
-	struct ARP_Cache_Saturation_Storm b={
-	.ip_dst="192.168.1.101",
-	.enet_dst={0x01,0x02,0x03,0x04,0x05,0x06},
-	.device="eth0",
-	.storm_size=1000,
-	.test_time=60,
-	.space_time=0
-	};
-
-	
-	LIST_ENTRY runnig_list;
-	InitializeListHead(&runnig_list);
+void Test_MISS(MISSION *mission)
+{
 	pthread_t thread_id;
- 	int return_id;
-    pthread_rwlock_rdlock(&rwlock);
-	LIST_ENTRY *current = mission_list.Flink;
-	MISSION *entry;
-	while(current != &mission_list)
-	{
-		entry = CONTAINING_RECORD(current,MISSION,node);
-		if (entry->status==0 )
+	if (mission->status==RUNNING)
 		{
-		MISSION *run_mission = (MISSION *)malloc(sizeof(MISSION));
-    	memset(run_mission,0,sizeof(MISSION));
-		memcpy(run_mission,entry,sizeof(MISSION));
-		InsertTailList(&runnig_list,&run_mission->node);
+			switch(mission->type){
+				case ARP_REQUEST_STORM_ :
+					{
+						ARP_REQUEST_STORM *a;
+						a=(ARP_REQUEST_STORM *)malloc(sizeof(ARP_REQUEST_STORM));
+						pthread_rwlock_wrlock(&rwlock_env);
+						memcpy(a->ip_dst,env->target1,16);
+						memcpy(a->ip_src,env->host,16);
+						memcpy(a->enet_dst,env->target1_mac,6);
+						memcpy(a->enet_src,env->host_mac,6);
+						memcpy(a->device,env->device,6);
+						pthread_rwlock_unlock(&rwlock_env); 
+						a->storm_size=cJSON_GetObjectItem(mission->param,"storm_size")->valueint;
+						a->test_time=cJSON_GetObjectItem(mission->param,"test_time")->valueint;
+						a->space_time=cJSON_GetObjectItem(mission->param,"space_time")->valueint;
+						pthread_create (&thread_id, NULL, (void *)ARP_Request_Storm, (void *)&a); 
+						pthread_join (thread_id, NULL);
+						break;
+					}
+			case ARP_CACHE_SATURATION_STORM_:
+				//pthread_create (&thread_id, NULL, (void *)ARP_Cache_Saturation_Storm, (void *)&b); 
+				//pthread_join (thread_id, NULL);
+				break;
+				  }
+
+
+
+}
+}
+
+
+
+void Test_Work(COMMAND *a)
+{
+
+	int err;
+	pthread_t ptemp;
+	MISSION * run_misson;
+	run_misson=(MISSION *)malloc(sizeof(MISSION));
+	memset(run_misson,0,sizeof(MISSION));
+	if(a->ALLGO)
+		{
+
+		if(a->order==START)
+			{
+			do{
+				pthread_rwlock_rdlock(&rwlock);
+			  	LIST_ENTRY *current = mission_list.Flink;
+			  	MISSION *entry;
+			  	while(current != &mission_list)
+			  	{
+				  entry = CONTAINING_RECORD(current,MISSION,node);
+				  if(entry->status==RUNNING)
+				  	{
+						memcpy(run_misson,entry,sizeof(MISSION));
+				  	}
+				  current = current->Flink;
+			  	}
+			  	pthread_rwlock_unlock(&rwlock);
+				Test_MISS(run_misson);
+				}while(!run_misson->name);
+			}
 		}
-		current = current->Flink;
-	}
-	pthread_rwlock_unlock(&rwlock);
+	else if((!a->ALLGO)&&a->type)
+		{
 
-	current = runnig_list.Flink;
-	while(current != &runnig_list)
-	{
-		entry = CONTAINING_RECORD(current,MISSION,node);
-		switch(entry->type){
-		case ARP_REQUEST_STORM :
-			pthread_create (&thread_id, NULL, (void *)ARP_Request_Storm, (void *)&a); 
-			pthread_join (thread_id, NULL);
-			break;
-		case ARP_CACHE_SATURATION_STORM:
-			pthread_create (&thread_id, NULL, (void *)ARP_Cache_Saturation_Storm, (void *)&b); 
-			pthread_join (thread_id, NULL);
-			break;
-		//case 
-
-
-		}
-		current = current->Flink;
 		}
 		
+
 }
+
+
+
+
+
 
 
 

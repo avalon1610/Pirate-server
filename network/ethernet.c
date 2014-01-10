@@ -6,6 +6,7 @@ int Ethernet_Brodacast_Storm(struct Ethernet_Brodacast_Storm *a)
 	u_char *enet_src=a->enet_src;
 	char *device=a->device;
 	int storm_size=a->storm_size;
+	int space_time=a->space_time;
 
 	int c;
 	int send_size=0;
@@ -30,9 +31,6 @@ int Ethernet_Brodacast_Storm(struct Ethernet_Brodacast_Storm *a)
 		  return 0;;
 	  }
 
-	while(send_size<storm_size)
-	{
-		 
 
 		t = libnet_build_ethernet(
         				enet_dst,                        /* 目标主机的MAC地址 */
@@ -50,27 +48,27 @@ int Ethernet_Brodacast_Storm(struct Ethernet_Brodacast_Storm *a)
 
 		  }
 
-
-		  if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
+		if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
 		  {
 			  fprintf(stderr, "%s", libnet_geterror(l));
 		  }
 		  else
 		  {
 		  
-		  	send_size=send_size+packet_s;
 			libnet_adv_free_packet(l, packet);
 		  }
-		  c = libnet_write(l);
-		  	if (c == -1)
-		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
-		    }
+		  
+		if(space_time)
+		{
+			send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
+		}
+		else
+		{
+			send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+		}
 
 		  
-		  libnet_clear_packet(l);
-		  
-	}
+		 
 return 1;
 
 }
@@ -82,7 +80,7 @@ int Ethernet_Multicast_Storm(struct Ethernet_Multicast_Storm *a)
 	u_char *enet_src=a->enet_src;
 	char *device=a->device;
 	int storm_size=a->storm_size;
-		
+	int space_time=a->space_time;	
 	int c;
 	int send_size=0;
    // u_int32_t i;
@@ -109,8 +107,7 @@ int Ethernet_Multicast_Storm(struct Ethernet_Multicast_Storm *a)
 		  return 0;;
 	  }
 
-	while(send_size<storm_size)
-	{
+	
 		 
 
 		t = libnet_build_ethernet(
@@ -137,19 +134,18 @@ int Ethernet_Multicast_Storm(struct Ethernet_Multicast_Storm *a)
 		  else
 		  {
 		  
-		  	send_size=send_size+packet_s;
 			libnet_adv_free_packet(l, packet);
 		  }
-		  c = libnet_write(l);
-		  	if (c == -1)
-		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
-		    }
-
-		  
-		  libnet_clear_packet(l);
-		  
-	}
+	
+		 if(space_time)
+		{
+			send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
+		}
+		else
+		{
+			send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+		}
+	
 
 return 1;
 }
@@ -161,7 +157,7 @@ int Ethernet_Unicast_Storm(struct Ethernet_Unicast_Storm *a)
 	u_char *enet_src=a->enet_src;
 	char *device=a->device;
 	int storm_size=a->storm_size;
-
+	int space_time=a->space_time;
 	int c;
 	int send_size=0;
   //  u_int32_t i;
@@ -188,8 +184,7 @@ int Ethernet_Unicast_Storm(struct Ethernet_Unicast_Storm *a)
 		  return 0;;
 	  }
 
-	while(send_size<storm_size)
-	{
+	
 		 
 
 		t = libnet_build_ethernet(
@@ -215,20 +210,18 @@ int Ethernet_Unicast_Storm(struct Ethernet_Unicast_Storm *a)
 		  }
 		  else
 		  {
-		  
-		  	send_size=send_size+packet_s;
 			libnet_adv_free_packet(l, packet);
 		  }
-		  c = libnet_write(l);
-		  	if (c == -1)
-		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
-		    }
+		if(space_time)
+		{
+			send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
+		}
+		else
+		{
+			send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+		}
+		  
 
-		  
-		  libnet_clear_packet(l);
-		  
-	}
 
  return 1;
 }
@@ -388,7 +381,6 @@ int Ethernet_Fuzzer(struct Ethernet_Fuzzer *a)
 		  else
 		  {
 		  
-			send_size=send_size+packet_s;
 			libnet_adv_free_packet(l, packet);
 		  }
 		  c = libnet_write(l);
@@ -400,9 +392,10 @@ int Ethernet_Fuzzer(struct Ethernet_Fuzzer *a)
 		  
 		  libnet_clear_packet(l);
 		  protocol_type=protocol_type+0x0001;
-		  free(payload);
 		  
+		 free(payload); 
 	}
+
 
 
 
