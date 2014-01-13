@@ -10,7 +10,7 @@ AR	Makefile	/^AR = ar rc$/;"	m
 ARRAY_SIZE	mongoose.c	128;"	d	file:
 AUTH_DOMAIN	mongoose.c	/^  ACCESS_CONTROL_LIST, ACCESS_LOG_FILE, AUTH_DOMAIN, CGI_INTERPRETER,$/;"	e	enum:__anon1	file:
 CC	Makefile	/^CC = gcc$/;"	m
-CFLAGS	Makefile	/^CFLAGS = -I..\/include$/;"	m
+CFLAGS	Makefile	/^CFLAGS = -DE4C_THREADSAFE -I..\/include -I..\/network$/;"	m
 CGI_ENVIRONMENT_SIZE	mongoose.c	133;"	d	file:
 CGI_INTERPRETER	mongoose.c	/^  ACCESS_CONTROL_LIST, ACCESS_LOG_FILE, AUTH_DOMAIN, CGI_INTERPRETER,$/;"	e	enum:__anon1	file:
 CGI_PATTERN	mongoose.c	/^  CGI_PATTERN, DOCUMENT_ROOT, ENABLE_DIRECTORY_LISTING, ERROR_LOG_FILE,$/;"	e	enum:__anon1	file:
@@ -76,7 +76,7 @@ MD5_CTX	mongoose.c	/^} MD5_CTX;$/;"	t	typeref:struct:MD5Context	file:
 MONGOOSE_HEADER_INCLUDED	mongoose.h	21;"	d
 MONGOOSE_VERSION	mongoose.h	23;"	d
 NUM_OPTIONS	mongoose.c	/^  SSL_CERTIFICATE, URL_REWRITES, NUM_OPTIONS$/;"	e	enum:__anon1	file:
-OBJ	Makefile	/^OBJ = mongoose.o lib_ui.o cJSON.o$/;"	m
+OBJ	Makefile	/^OBJ = mongoose.o lib_ui.o$/;"	m
 O_BINARY	mongoose.c	109;"	d	file:
 PASSWORDS_FILE_NAME	mongoose.c	136;"	d	file:
 R0	mongoose.c	1231;"	d	file:
@@ -86,13 +86,14 @@ R3	mongoose.c	1234;"	d	file:
 R4	mongoose.c	1235;"	d	file:
 RM	Makefile	/^RM = rm -f$/;"	m
 RUN_AS_USER	mongoose.c	/^  INDEX_FILES, LISTENING_PORT, DAV_AUTH_FILE, RUN_AS_USER,$/;"	e	enum:__anon1	file:
+SETUP_FUNCTION	lib_ui.c	/^typedef int(*SETUP_FUNCTION)(const char *,char *);$/;"	t	file:
 SHA1Final	mongoose.c	/^static void SHA1Final(unsigned char digest[20], SHA1_CTX* context) {$/;"	f	file:	signature:(unsigned char digest[20], SHA1_CTX* context)
 SHA1HANDSOFF	mongoose.c	1211;"	d	file:
 SHA1Init	mongoose.c	/^static void SHA1Init(SHA1_CTX* context) {$/;"	f	file:	signature:(SHA1_CTX* context)
 SHA1Transform	mongoose.c	/^static void SHA1Transform(uint32_t state[5], const unsigned char buffer[64]) {$/;"	f	file:	signature:(uint32_t state[5], const unsigned char buffer[64])
 SHA1Update	mongoose.c	/^static void SHA1Update(SHA1_CTX* context, const unsigned char* data,$/;"	f	file:	signature:(SHA1_CTX* context, const unsigned char* data, uint32_t len)
 SHA1_CTX	mongoose.c	/^} SHA1_CTX;$/;"	t	typeref:struct:__anon3	file:
-SRC	Makefile	/^SRC = mongoose.c lib_ui.c cJSON.c$/;"	m
+SRC	Makefile	/^SRC = mongoose.c lib_ui.c $/;"	m
 SSL_CERTIFICATE	mongoose.c	/^  SSL_CERTIFICATE, URL_REWRITES, NUM_OPTIONS$/;"	e	enum:__anon1	file:
 STR	mongoose.c	83;"	d	file:
 STRX	mongoose.c	82;"	d	file:
@@ -100,7 +101,6 @@ S_ISDIR	mongoose.c	70;"	d	file:
 UI_LIB_H	lib_ui.h	2;"	d
 URL_REWRITES	mongoose.c	/^  SSL_CERTIFICATE, URL_REWRITES, NUM_OPTIONS$/;"	e	enum:__anon1	file:
 WIN32_LEAN_AND_MEAN	mongoose.c	22;"	d	file:
-_CRT_SECURE_NO_WARNINGS	cJSON.c	25;"	d	file:
 _CRT_SECURE_NO_WARNINGS	mongoose.c	21;"	d	file:
 _FILE_OFFSET_BITS	mongoose.c	27;"	d	file:
 _INTEGRAL_MAX_BITS	mongoose.c	20;"	d	file:
@@ -130,52 +130,12 @@ birth_time	mongoose.c	/^  time_t birth_time;$/;"	m	struct:connection	file:	acces
 bits	mongoose.c	/^  uint32_t bits[2];$/;"	m	struct:MD5Context	file:	access:public
 blk	mongoose.c	1229;"	d	file:
 blk0	mongoose.c	/^static uint32_t blk0(union char64long16 *block, int i) {$/;"	f	file:	signature:(union char64long16 *block, int i)
-bool	lib_ui.c	6;"	d	file:
 buf	mongoose.c	/^  char *buf;    \/\/ Buffer that holds the data$/;"	m	struct:iobuf	file:	access:public
 buf	mongoose.c	/^  char buf[CGI_ENVIRONMENT_SIZE];       \/\/ Environment buffer$/;"	m	struct:cgi_env_block	file:	access:public
 buf	mongoose.c	/^  uint32_t buf[4];$/;"	m	struct:MD5Context	file:	access:public
 buffer	mongoose.c	/^    unsigned char buffer[64];$/;"	m	struct:__anon3	file:	access:public
 byteReverse	mongoose.c	/^static void byteReverse(unsigned char *buf, unsigned longs) {$/;"	f	file:	signature:(unsigned char *buf, unsigned longs)
 c	mongoose.c	/^union char64long16 { unsigned char c[64]; uint32_t l[16]; };$/;"	m	union:char64long16	file:	access:public
-cJSON_AddItemReferenceToArray	cJSON.c	/^void	cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item)						{cJSON_AddItemToArray(array,create_reference(item));}$/;"	f	signature:(cJSON *array, cJSON *item)
-cJSON_AddItemReferenceToObject	cJSON.c	/^void	cJSON_AddItemReferenceToObject(cJSON *object,const char *string,cJSON *item)	{cJSON_AddItemToObject(object,string,create_reference(item));}$/;"	f	signature:(cJSON *object,const char *string,cJSON *item)
-cJSON_AddItemToArray	cJSON.c	/^void   cJSON_AddItemToArray(cJSON *array, cJSON *item)						{cJSON *c=array->child;if (!item) return; if (!c) {array->child=item;} else {while (c && c->next) c=c->next; suffix_object(c,item);}}$/;"	f	signature:(cJSON *array, cJSON *item)
-cJSON_AddItemToObject	cJSON.c	/^void   cJSON_AddItemToObject(cJSON *object,const char *string,cJSON *item)	{if (!item) return; if (item->string) cJSON_free(item->string);item->string=cJSON_strdup(string);cJSON_AddItemToArray(object,item);}$/;"	f	signature:(cJSON *object,const char *string,cJSON *item)
-cJSON_CreateArray	cJSON.c	/^cJSON *cJSON_CreateArray(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_Array;return item;}$/;"	f	signature:(void)
-cJSON_CreateBool	cJSON.c	/^cJSON *cJSON_CreateBool(int b)					{cJSON *item=cJSON_New_Item();if(item)item->type=b?cJSON_True:cJSON_False;return item;}$/;"	f	signature:(int b)
-cJSON_CreateDoubleArray	cJSON.c	/^cJSON *cJSON_CreateDoubleArray(const double *numbers,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}$/;"	f	signature:(const double *numbers,int count)
-cJSON_CreateFalse	cJSON.c	/^cJSON *cJSON_CreateFalse(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_False;return item;}$/;"	f	signature:(void)
-cJSON_CreateFloatArray	cJSON.c	/^cJSON *cJSON_CreateFloatArray(const float *numbers,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}$/;"	f	signature:(const float *numbers,int count)
-cJSON_CreateIntArray	cJSON.c	/^cJSON *cJSON_CreateIntArray(const int *numbers,int count)		{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateNumber(numbers[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}$/;"	f	signature:(const int *numbers,int count)
-cJSON_CreateNull	cJSON.c	/^cJSON *cJSON_CreateNull(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_NULL;return item;}$/;"	f	signature:(void)
-cJSON_CreateNumber	cJSON.c	/^cJSON *cJSON_CreateNumber(double num)			{cJSON *item=cJSON_New_Item();if(item){item->type=cJSON_Number;item->valuedouble=num;item->valueint=(int)num;}return item;}$/;"	f	signature:(double num)
-cJSON_CreateObject	cJSON.c	/^cJSON *cJSON_CreateObject(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_Object;return item;}$/;"	f	signature:(void)
-cJSON_CreateString	cJSON.c	/^cJSON *cJSON_CreateString(const char *string)	{cJSON *item=cJSON_New_Item();if(item){item->type=cJSON_String;item->valuestring=cJSON_strdup(string);}return item;}$/;"	f	signature:(const char *string)
-cJSON_CreateStringArray	cJSON.c	/^cJSON *cJSON_CreateStringArray(const char **strings,int count)	{int i;cJSON *n=0,*p=0,*a=cJSON_CreateArray();for(i=0;a && i<count;i++){n=cJSON_CreateString(strings[i]);if(!i)a->child=n;else suffix_object(p,n);p=n;}return a;}$/;"	f	signature:(const char **strings,int count)
-cJSON_CreateTrue	cJSON.c	/^cJSON *cJSON_CreateTrue(void)					{cJSON *item=cJSON_New_Item();if(item)item->type=cJSON_True;return item;}$/;"	f	signature:(void)
-cJSON_Delete	cJSON.c	/^void cJSON_Delete(cJSON *c)$/;"	f	signature:(cJSON *c)
-cJSON_DeleteItemFromArray	cJSON.c	/^void   cJSON_DeleteItemFromArray(cJSON *array,int which)			{cJSON_Delete(cJSON_DetachItemFromArray(array,which));}$/;"	f	signature:(cJSON *array,int which)
-cJSON_DeleteItemFromObject	cJSON.c	/^void   cJSON_DeleteItemFromObject(cJSON *object,const char *string) {cJSON_Delete(cJSON_DetachItemFromObject(object,string));}$/;"	f	signature:(cJSON *object,const char *string)
-cJSON_DetachItemFromArray	cJSON.c	/^cJSON *cJSON_DetachItemFromArray(cJSON *array,int which)			{cJSON *c=array->child;while (c && which>0) c=c->next,which--;if (!c) return 0;$/;"	f	signature:(cJSON *array,int which)
-cJSON_DetachItemFromObject	cJSON.c	/^cJSON *cJSON_DetachItemFromObject(cJSON *object,const char *string) {int i=0;cJSON *c=object->child;while (c && cJSON_strcasecmp(c->string,string)) i++,c=c->next;if (c) return cJSON_DetachItemFromArray(object,i);return 0;}$/;"	f	signature:(cJSON *object,const char *string)
-cJSON_Duplicate	cJSON.c	/^cJSON *cJSON_Duplicate(cJSON *item,int recurse)$/;"	f	signature:(cJSON *item,int recurse)
-cJSON_GetArrayItem	cJSON.c	/^cJSON *cJSON_GetArrayItem(cJSON *array,int item)				{cJSON *c=array->child;  while (c && item>0) item--,c=c->next; return c;}$/;"	f	signature:(cJSON *array,int item)
-cJSON_GetArraySize	cJSON.c	/^int    cJSON_GetArraySize(cJSON *array)							{cJSON *c=array->child;int i=0;while(c)i++,c=c->next;return i;}$/;"	f	signature:(cJSON *array)
-cJSON_GetErrorPtr	cJSON.c	/^const char *cJSON_GetErrorPtr(void) {return ep;}$/;"	f	signature:(void)
-cJSON_GetObjectItem	cJSON.c	/^cJSON *cJSON_GetObjectItem(cJSON *object,const char *string)	{cJSON *c=object->child; while (c && cJSON_strcasecmp(c->string,string)) c=c->next; return c;}$/;"	f	signature:(cJSON *object,const char *string)
-cJSON_InitHooks	cJSON.c	/^void cJSON_InitHooks(cJSON_Hooks* hooks)$/;"	f	signature:(cJSON_Hooks* hooks)
-cJSON_Minify	cJSON.c	/^void cJSON_Minify(char *json)$/;"	f	signature:(char *json)
-cJSON_New_Item	cJSON.c	/^static cJSON *cJSON_New_Item(void)$/;"	f	file:	signature:(void)
-cJSON_Parse	cJSON.c	/^cJSON *cJSON_Parse(const char *value) {return cJSON_ParseWithOpts(value,0,0);}$/;"	f	signature:(const char *value)
-cJSON_ParseWithOpts	cJSON.c	/^cJSON *cJSON_ParseWithOpts(const char *value,const char **return_parse_end,int require_null_terminated)$/;"	f	signature:(const char *value,const char **return_parse_end,int require_null_terminated)
-cJSON_Print	cJSON.c	/^char *cJSON_Print(cJSON *item)				{return print_value(item,0,1);}$/;"	f	signature:(cJSON *item)
-cJSON_PrintUnformatted	cJSON.c	/^char *cJSON_PrintUnformatted(cJSON *item)	{return print_value(item,0,0);}$/;"	f	signature:(cJSON *item)
-cJSON_ReplaceItemInArray	cJSON.c	/^void   cJSON_ReplaceItemInArray(cJSON *array,int which,cJSON *newitem)		{cJSON *c=array->child;while (c && which>0) c=c->next,which--;if (!c) return;$/;"	f	signature:(cJSON *array,int which,cJSON *newitem)
-cJSON_ReplaceItemInObject	cJSON.c	/^void   cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem){int i=0;cJSON *c=object->child;while(c && cJSON_strcasecmp(c->string,string))i++,c=c->next;if(c){newitem->string=cJSON_strdup(string);cJSON_ReplaceItemInArray(object,i,newitem);}}$/;"	f	signature:(cJSON *object,const char *string,cJSON *newitem)
-cJSON_free	cJSON.c	/^static void (*cJSON_free)(void *ptr) = free;$/;"	v	file:
-cJSON_malloc	cJSON.c	/^static void *(*cJSON_malloc)(size_t sz) = malloc;$/;"	v	file:
-cJSON_strcasecmp	cJSON.c	/^static int cJSON_strcasecmp(const char *s1,const char *s2)$/;"	f	file:	signature:(const char *s1,const char *s2)
-cJSON_strdup	cJSON.c	/^static char* cJSON_strdup(const char* str)$/;"	f	file:	signature:(const char* str)
 call_uri_handler_if_data_is_buffered	mongoose.c	/^static void call_uri_handler_if_data_is_buffered(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
 cgi_env_block	mongoose.c	/^struct cgi_env_block {$/;"	s	file:
 cgi_env_block::buf	mongoose.c	/^  char buf[CGI_ENVIRONMENT_SIZE];       \/\/ Environment buffer$/;"	m	struct:cgi_env_block	file:	access:public
@@ -196,6 +156,7 @@ close_local_endpoint	mongoose.c	/^static void close_local_endpoint(struct connec
 close_local_endpoint	mongoose.c	/^static void close_local_endpoint(struct connection *conn);$/;"	p	file:	signature:(struct connection *conn)
 closedir	mongoose.c	/^static int closedir(DIR *dir) {$/;"	f	file:	signature:(DIR *dir)
 closesocket	mongoose.c	97;"	d	file:
+command_control	lib_ui.c	/^int command_control(COMMAND cmd)$/;"	f	signature:(COMMAND cmd)
 compare_dir_entries	mongoose.c	/^static int __cdecl compare_dir_entries(const void *p1, const void *p2) {$/;"	f	file:	signature:(const void *p1, const void *p2)
 config_options	mongoose.c	/^  char *config_options[NUM_OPTIONS];$/;"	m	struct:mg_server	file:	access:public
 conn	mongoose.c	/^  struct connection *conn;$/;"	m	struct:dir_entry	typeref:struct:dir_entry::connection	file:	access:public
@@ -225,7 +186,6 @@ content	mongoose.h	/^  char *content;              \/\/ POST (or websocket messa
 content_len	mongoose.h	/^  int content_len;            \/\/ content length$/;"	m	struct:mg_connection	access:public
 convert_uri_to_file_name	mongoose.c	/^static int convert_uri_to_file_name(struct connection *conn, char *buf,$/;"	f	file:	signature:(struct connection *conn, char *buf, size_t buf_len, file_stat_t *st)
 count	mongoose.c	/^    uint32_t count[2];$/;"	m	struct:__anon3	file:	access:public
-create_reference	cJSON.c	/^static cJSON *create_reference(cJSON *item) {cJSON *ref=cJSON_New_Item();if (!ref) return 0;memcpy(ref,item,sizeof(cJSON));ref->string=0;ref->type|=cJSON_IsReference;ref->next=ref->prev=0;return ref;}$/;"	f	file:	signature:(cJSON *item)
 ctl	mongoose.c	/^  sock_t ctl[2];  \/\/ Control socketpair. Used to wake up from select() call$/;"	m	struct:mg_server	file:	access:public
 d_name	mongoose.c	/^  char d_name[MAX_PATH_SIZE];$/;"	m	struct:dirent	file:	access:public
 deliver_websocket_frame	mongoose.c	/^static int deliver_websocket_frame(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
@@ -243,19 +203,16 @@ endpoint::ssl	mongoose.c	/^  void *ssl;                \/\/ SSL descriptor$/;"	m
 endpoint::uh	mongoose.c	/^  struct uri_handler *uh;   \/\/ URI handler user function$/;"	m	union:endpoint	typeref:struct:endpoint::uri_handler	file:	access:public
 endpoint_type	mongoose.c	/^  enum endpoint_type endpoint_type;$/;"	m	struct:connection	typeref:enum:connection::endpoint_type	file:	access:public
 endpoint_type	mongoose.c	/^enum endpoint_type { EP_NONE, EP_FILE, EP_CGI, EP_USER, EP_PUT };$/;"	g	file:
-ep	cJSON.c	/^static const char *ep;$/;"	v	file:
 evn_setup	lib_ui.c	/^static int evn_setup(struct mg_connection *conn)$/;"	f	file:	signature:(struct mg_connection *conn)
 expire_time	mongoose.c	/^  time_t expire_time;$/;"	m	struct:connection	file:	access:public
 ext_len	mongoose.c	/^  size_t ext_len;$/;"	m	struct:__anon2	file:	access:public
 extension	mongoose.c	/^  const char *extension;$/;"	m	struct:__anon2	file:	access:public
-false	lib_ui.c	8;"	d	file:
 fd	mongoose.c	/^  int fd;                   \/\/ Opened regular local file$/;"	m	union:endpoint	file:	access:public
 file_name	mongoose.c	/^  char *file_name;$/;"	m	struct:dir_entry	file:	access:public
 file_stat_t	mongoose.c	/^typedef struct _stati64 file_stat_t;$/;"	t	typeref:struct:_stati64	file:
 file_stat_t	mongoose.c	/^typedef struct stat file_stat_t;$/;"	t	typeref:struct:stat	file:
 find_index_file	mongoose.c	/^static int find_index_file(struct connection *conn, char *path,$/;"	f	file:	signature:(struct connection *conn, char *path, size_t path_len, file_stat_t *stp)
 find_uri_handler	mongoose.c	/^static struct uri_handler *find_uri_handler(struct mg_server *server,$/;"	f	file:	signature:(struct mg_server *server, const char *uri)
-firstByteMark	cJSON.c	/^static const unsigned char firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };$/;"	v	file:
 flags	mongoose.c	/^  int flags;        \/\/ CONN_* flags: CONN_CLOSE, CONN_SPOOL_DONE, etc$/;"	m	struct:connection	file:	access:public
 flockfile	mongoose.c	76;"	d	file:
 forward_post_data	mongoose.c	/^static void forward_post_data(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
@@ -264,6 +221,7 @@ funlockfile	mongoose.c	77;"	d	file:
 get_mime_type	mongoose.c	/^static void get_mime_type(const struct mg_server *server, const char *path,$/;"	f	file:	signature:(const struct mg_server *server, const char *path, struct vec *vec)
 get_month_index	mongoose.c	/^static int get_month_index(const char *s) {$/;"	f	file:	signature:(const char *s)
 get_option_index	mongoose.c	/^static int get_option_index(const char *name) {$/;"	f	file:	signature:(const char *name)
+get_post_data	lib_ui.c	/^static char *get_post_data(struct mg_connection *conn)$/;"	f	file:	signature:(struct mg_connection *conn)
 get_request_len	mongoose.c	/^static int get_request_len(const char *s, int buf_len) {$/;"	f	file:	signature:(const char *s, int buf_len)
 get_var	mongoose.c	/^static int get_var(const char *data, size_t data_len, const char *name,$/;"	f	file:	signature:(const char *data, size_t data_len, const char *name, char *dst, size_t dst_len)
 gmt_time_string	mongoose.c	/^static void gmt_time_string(char *buf, size_t buf_len, time_t *t) {$/;"	f	file:	signature:(char *buf, size_t buf_len, time_t *t)
@@ -273,6 +231,7 @@ handle_lua_request	mongoose.c	/^static void handle_lua_request(struct connection
 handle_mkcol	mongoose.c	/^static void handle_mkcol(struct connection *conn, const char *path) {$/;"	f	file:	signature:(struct connection *conn, const char *path)
 handle_propfind	mongoose.c	/^static void handle_propfind(struct connection *conn, const char *path,$/;"	f	file:	signature:(struct connection *conn, const char *path, file_stat_t *stp)
 handle_put	mongoose.c	/^static void handle_put(struct connection *conn, const char *path) {$/;"	f	file:	signature:(struct connection *conn, const char *path)
+handle_request	lib_ui.c	/^static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)$/;"	f	file:	signature:(struct mg_connection *conn,SETUP_FUNCTION func)
 handler	mongoose.c	/^  mg_handler_t handler;$/;"	m	struct:uri_handler	file:	access:public
 http_headers	mongoose.h	/^  } http_headers[30];$/;"	m	struct:mg_connection	typeref:struct:mg_connection::mg_header	access:public
 http_version	mongoose.h	/^  const char *http_version;   \/\/ E.g. "1.0", "1.1"$/;"	m	struct:mg_connection	access:public
@@ -414,38 +373,23 @@ open_file_endpoint	mongoose.c	/^static void open_file_endpoint(struct connection
 open_listening_socket	mongoose.c	/^static sock_t open_listening_socket(union socket_address *sa) {$/;"	f	file:	signature:(union socket_address *sa)
 open_local_endpoint	mongoose.c	/^static void open_local_endpoint(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
 opendir	mongoose.c	/^static DIR *opendir(const char *name) {$/;"	f	file:	signature:(const char *name)
-parse_array	cJSON.c	/^static const char *parse_array(cJSON *item,const char *value)$/;"	f	file:	signature:(cJSON *item,const char *value)
-parse_array	cJSON.c	/^static const char *parse_array(cJSON *item,const char *value);$/;"	p	file:	signature:(cJSON *item,const char *value)
-parse_data	lib_ui.c	/^static int parse_data(const char *data)$/;"	f	file:	signature:(const char *data)
 parse_date_string	mongoose.c	/^static time_t parse_date_string(const char *datetime) {$/;"	f	file:	signature:(const char *datetime)
-parse_hex4	cJSON.c	/^static unsigned parse_hex4(const char *str)$/;"	f	file:	signature:(const char *str)
+parse_env	lib_ui.c	/^static int parse_env(const char *data,char *msg)$/;"	f	file:	signature:(const char *data,char *msg)
 parse_http_headers	mongoose.c	/^static void parse_http_headers(char **buf, struct mg_connection *ri) {$/;"	f	file:	signature:(char **buf, struct mg_connection *ri)
 parse_http_message	mongoose.c	/^static int parse_http_message(char *buf, int len, struct mg_connection *ri) {$/;"	f	file:	signature:(char *buf, int len, struct mg_connection *ri)
+parse_mission	lib_ui.c	/^static int parse_mission(const char *data,char *msg)$/;"	f	file:	signature:(const char *data,char *msg)
 parse_net	mongoose.c	/^static int parse_net(const char *spec, uint32_t *net, uint32_t *mask) {$/;"	f	file:	signature:(const char *spec, uint32_t *net, uint32_t *mask)
-parse_number	cJSON.c	/^static const char *parse_number(cJSON *item,const char *num)$/;"	f	file:	signature:(cJSON *item,const char *num)
-parse_object	cJSON.c	/^static const char *parse_object(cJSON *item,const char *value)$/;"	f	file:	signature:(cJSON *item,const char *value)
-parse_object	cJSON.c	/^static const char *parse_object(cJSON *item,const char *value);$/;"	p	file:	signature:(cJSON *item,const char *value)
 parse_port_string	mongoose.c	/^static int parse_port_string(const char *str, union socket_address *sa) {$/;"	f	file:	signature:(const char *str, union socket_address *sa)
 parse_range_header	mongoose.c	/^static int parse_range_header(const char *header, int64_t *a, int64_t *b) {$/;"	f	file:	signature:(const char *header, int64_t *a, int64_t *b)
-parse_string	cJSON.c	/^static const char *parse_string(cJSON *item,const char *str)$/;"	f	file:	signature:(cJSON *item,const char *str)
-parse_value	cJSON.c	/^static const char *parse_value(cJSON *item,const char *value)$/;"	f	file:	signature:(cJSON *item,const char *value)
-parse_value	cJSON.c	/^static const char *parse_value(cJSON *item,const char *value);$/;"	p	file:	signature:(cJSON *item,const char *value)
+parse_runner	lib_ui.c	/^static int parse_runner(const char *data,char *msg)$/;"	f	file:	signature:(const char *data,char *msg)
+parse_scan	lib_ui.c	/^static int parse_scan(const char *data,char *msg)$/;"	f	file:	signature:(const char *data,char *msg)
 path_info	mongoose.c	/^  char *path_info;$/;"	m	struct:connection	file:	access:public
 pid_t	mongoose.c	/^typedef int pid_t;$/;"	t	file:
 prepare_cgi_environment	mongoose.c	/^static void prepare_cgi_environment(struct connection *conn,$/;"	f	file:	signature:(struct connection *conn, const char *prog, struct cgi_env_block *blk)
 prepare_lua_environment	mongoose.c	/^static void prepare_lua_environment(struct mg_connection *ri, lua_State *L) {$/;"	f	file:	signature:(struct mg_connection *ri, lua_State *L)
 prev	mongoose.c	/^struct linked_list_link { struct linked_list_link *prev, *next; };$/;"	m	struct:linked_list_link	typeref:struct:linked_list_link::linked_list_link	file:	access:public
-print_array	cJSON.c	/^static char *print_array(cJSON *item,int depth,int fmt)$/;"	f	file:	signature:(cJSON *item,int depth,int fmt)
-print_array	cJSON.c	/^static char *print_array(cJSON *item,int depth,int fmt);$/;"	p	file:	signature:(cJSON *item,int depth,int fmt)
 print_dir_entry	mongoose.c	/^static void print_dir_entry(const struct dir_entry *de) {$/;"	f	file:	signature:(const struct dir_entry *de)
-print_number	cJSON.c	/^static char *print_number(cJSON *item)$/;"	f	file:	signature:(cJSON *item)
-print_object	cJSON.c	/^static char *print_object(cJSON *item,int depth,int fmt)$/;"	f	file:	signature:(cJSON *item,int depth,int fmt)
-print_object	cJSON.c	/^static char *print_object(cJSON *item,int depth,int fmt);$/;"	p	file:	signature:(cJSON *item,int depth,int fmt)
 print_props	mongoose.c	/^static void print_props(struct connection *conn, const char *uri,$/;"	f	file:	signature:(struct connection *conn, const char *uri, file_stat_t *stp)
-print_string	cJSON.c	/^static char *print_string(cJSON *item)	{return print_string_ptr(item->valuestring);}$/;"	f	file:	signature:(cJSON *item)
-print_string_ptr	cJSON.c	/^static char *print_string_ptr(const char *str)$/;"	f	file:	signature:(const char *str)
-print_value	cJSON.c	/^static char *print_value(cJSON *item,int depth,int fmt)$/;"	f	file:	signature:(cJSON *item,int depth,int fmt)
-print_value	cJSON.c	/^static char *print_value(cJSON *item,int depth,int fmt);$/;"	p	file:	signature:(cJSON *item,int depth,int fmt)
 process_request	mongoose.c	/^static void process_request(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
 ptr	mongoose.c	/^  const char *ptr;$/;"	m	struct:vec	file:	access:public
 put_dir	mongoose.c	/^static int put_dir(const char *path) {$/;"	f	file:	signature:(const char *path)
@@ -489,7 +433,6 @@ should_keep_alive	mongoose.c	/^static int should_keep_alive(const struct mg_conn
 sin	mongoose.c	/^  struct sockaddr_in sin;$/;"	m	union:socket_address	typeref:struct:socket_address::sockaddr_in	file:	access:public
 sin6	mongoose.c	/^  struct sockaddr_in6 sin6;$/;"	m	union:socket_address	typeref:struct:socket_address::sockaddr_in6	file:	access:public
 size	mongoose.c	/^  int size;     \/\/ Buffer size$/;"	m	struct:iobuf	file:	access:public
-skip	cJSON.c	/^static const char *skip(const char *in) {while (in && *in && (unsigned char)*in<=32) in++; return in;}$/;"	f	file:	signature:(const char *in)
 skip	mongoose.c	/^static char *skip(char **buf, const char *delimiters) {$/;"	f	file:	signature:(char **buf, const char *delimiters)
 sleep	mongoose.c	71;"	d	file:
 snprintf	mongoose.c	63;"	d	file:
@@ -512,13 +455,11 @@ static_builtin_mime_types	mongoose.c	/^} static_builtin_mime_types[] = {$/;"	v	t
 static_config_options	mongoose.c	/^static const char *static_config_options[] = {$/;"	v	file:
 static_month_names	mongoose.c	/^static const char *static_month_names[] = {$/;"	v	file:
 status_code	mongoose.h	/^  int status_code;            \/\/ HTTP status code for HTTP error handler$/;"	m	struct:mg_connection	access:public
-suffix_object	cJSON.c	/^static void suffix_object(cJSON *prev,cJSON *item) {prev->next=item;item->prev=prev;}$/;"	f	file:	signature:(cJSON *prev,cJSON *item)
 suggest_connection_header	mongoose.c	/^static const char *suggest_connection_header(const struct mg_connection *conn) {$/;"	f	file:	signature:(const struct mg_connection *conn)
 to64	mongoose.c	107;"	d	file:
 to64	mongoose.c	75;"	d	file:
 to_unicode	mongoose.c	/^static void to_unicode(const char *path, wchar_t *wbuf, size_t wbuf_len) {$/;"	f	file:	signature:(const char *path, wchar_t *wbuf, size_t wbuf_len)
 transfer_file_data	mongoose.c	/^static void transfer_file_data(struct connection *conn) {$/;"	f	file:	signature:(struct connection *conn)
-true	lib_ui.c	7;"	d	file:
 uh	mongoose.c	/^  struct uri_handler *uh;   \/\/ URI handler user function$/;"	m	union:endpoint	typeref:struct:endpoint::uri_handler	file:	access:public
 uint16_t	mongoose.c	/^typedef unsigned short uint16_t;$/;"	t	file:
 uint32_t	mongoose.c	/^typedef unsigned int uint32_t;$/;"	t	file:

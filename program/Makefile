@@ -1,7 +1,7 @@
 SRC = main.c
 TARGET = pppp
 CFLAG = -g -DDEBUG -I../ui -I../include -I../network 
-LDFLAG = -L../lib -lc -lm -lui -pthread -lnetwork -lnet -lcomm
+LDFLAG = -L../lib -lc -lm -lui -pthread -lnetwork -lnet -lcomm -lzlog
 SHELL = /bin/sh
 LIB_DIR = ../lib/
 BIN_DIR = ../bin/

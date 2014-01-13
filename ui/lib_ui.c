@@ -7,15 +7,19 @@
 #include "mongoose.h"
 #include "comm.h"
 #include "network.h"
+#include "zlog.h"
 
 extern LIST_ENTRY mission_list;
 extern pthread_rwlock_t rwlock;
 extern pthread_rwlock_t rwlock_env;
 extern ENV *env;
 extern RUNNING_MISSION *Running;
+extern zlog_category_t *c;
 
 int command_control(COMMAND cmd)
 {
+    if (Running == NULL)
+        return false;
     switch(cmd.type)
     {
         case T_SCAN:
@@ -26,7 +30,9 @@ int command_control(COMMAND cmd)
                 case START:
                 case RESUME:
                     if (Running->running_thread_id == 0) 
+                    {
                         pthread_create(NULL,NULL,(void *)Test_Work,&cmd);
+                    } 
                     break;
                 case PAUSE:
                 case STOP:
@@ -74,13 +80,14 @@ static int parse_mission(const char *data,char *msg)
     InsertTailList(&mission_list,&mission->node);
     pthread_rwlock_unlock(&rwlock);
 
-    DbgPrint("Add Mission:%d\n",mission->type);
+    zlog_debug(c,"Add Mission:%d\n",mission->type);
     return true;
 }
 
 static char *get_post_data(struct mg_connection *conn)
 {
     char *data;
+    zlog_debug(c,"content len:%d\n",conn->content_len);
     if (conn->content_len == 0)
         return NULL;
 
@@ -98,8 +105,16 @@ static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
         "Access-Control-Allow-Origin:";
     char reply[256] = {0};
     char error_msg[32] = {0};
-    char *post_data = get_post_data(conn);
-    char *origin = mg_get_header(conn,"Origin");
+    char *post_data;
+    char *origin;  
+    post_data = get_post_data(conn);
+    origin = (char *)mg_get_header(conn,"Origin");
+    if (origin == NULL)
+    {
+        zlog_error(c,"Origin is NULL\n");
+        return;
+    }
+
     if (func == NULL)
         return;
 
@@ -148,7 +163,7 @@ static int parse_env(const char *data,char *msg)
     pthread_rwlock_unlock(&rwlock_env);
     ret = true;
 
-    DbgPrint("Receive Env:\n host:%s\n target1:%s\n target2:%s\n",
+    zlog_debug(c,"Receive Env:\n host:%s\n target1:%s\n target2:%s\n",
            env->host,
            env->target1?env->target1:(unsigned char *)"NULL",
            env->target2?env->target2:(unsigned char *)"NULL");
@@ -160,25 +175,28 @@ Cleanup:
 static int parse_runner(const char *data,char *msg)
 {
     cJSON *root;
-    int status;
+    int order;
     bool ret = false;
     int type;
+    int status;
     LIST_ENTRY *current = mission_list.Flink;
     MISSION *entry;
+
+    zlog_debug(c,"3\n");
     if (data == NULL)
         return ret;
 
     root = cJSON_Parse(data);
-    status = cJSON_GetObjectItem(root,"status")->valueint;
+    order = cJSON_GetObjectItem(root,"order")->valueint;
     type = cJSON_GetObjectItem(root,"type")->valueint;
 
-    pthread_rwlock_wrlock(&rwlock);
+    zlog_debug(c,"get order:%d,type:%d\n",order,type);
+    pthread_rwlock_rdlock(&rwlock);
     while (current != &mission_list)
     {
         entry = CONTAINING_RECORD(current,MISSION,node);
         if (entry->type == type)
         {
-            entry->status = status;
             ret = true;
             break;
         }
@@ -186,12 +204,13 @@ static int parse_runner(const char *data,char *msg)
     }
     pthread_rwlock_unlock(&rwlock);
 
+    zlog_debug(c,"aaaa\n");
     if (ret)
     {
         COMMAND cmd;
         memset(&cmd,0,sizeof(cmd));
         cmd.type = T_MISSION;
-        cmd.order = status;
+        cmd.order = order;
         cmd.m_type = type;
         command_control(cmd);
     }
@@ -241,7 +260,7 @@ int run_server(void)
     mg_add_uri_handler(server,"/runner",runner_setup);
 
     // Serve request. Hit Ctrl-C to terminate the program
-    printf("Starting on port %s\n",mg_get_option(server,"listening_port"));
+    zlog_info(c,"Starting on port %s\n",mg_get_option(server,"listening_port"));
     while(1)
         mg_poll_server(server,1000);
 
