@@ -19,7 +19,7 @@ int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,
 #ifdef __cplusplus
 extern "C" {
 #endif
-void Test_Work(COMMAND *a);
+void Test_Work(/*COMMAND *a*/);
 
 #ifdef __cplusplus
 }
