@@ -3,13 +3,15 @@
 #include "arp.h"
 #include <time.h>
 #include "comm.h"
+#include "zlog.h"
 
 
 
+extern zlog_category_t *c;
 
 int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 {
-	DbgPrint("START TEST:ARP_Request_Storm \n");
+	zlog_debug(c,"Start ARP_Request_Storm\n");
 	RUNING_MISSION_W(pthread_self(),RUNNING,clock(),ARP_REQUEST_STORM_);
 
 	u_char *ip_dst=a->ip_dst;
@@ -20,6 +22,7 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 	int storm_size=a->storm_size;
 	int test_time=a->test_time;
 	int space_time=a->space_time;
+	zlog_debug(c,"mission arg:device:%s,storm_size:%d,test_time:%d,space_time:%d\n");
 	
 	u_int32_t d;
 	u_int32_t s;
@@ -83,11 +86,11 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 
 	if(space_time)
 		{
-			send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
+			send_storm_set_time(l,storm_size,packet_s,test_time,space_time);
 		}
 	else
 		{
-			send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+			send_storm_random_time(l,storm_size,packet_s,test_time);
 		}
 
     libnet_destroy(l);

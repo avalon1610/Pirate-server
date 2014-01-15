@@ -94,6 +94,17 @@ typedef struct _RUNNING_MISSION{
 	MISSION_TYPE type;
 }RUNNING_MISSION,*PRUNNING_MISSION;
 
+typedef enum {
+    accurate_gtod = 0,
+    accurate_select = 1,
+    accurate_rdtsc = 2,
+    accurate_ioport = 3,
+    accurate_nanosleep = 4,
+    accurate_abs_time = 5
+} ACCURATE;
+
+
+
 int DbgPrint(const char *format,...);
 
 #ifdef __cplusplus

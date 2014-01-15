@@ -2,25 +2,25 @@
 #define _ETHERNET_H_
 
 
-struct Ethernet_Brodacast_Storm
+typedef struct _ETHERNET_BRODACAST_STORM
 {
 	
 	u_char enet_src[6];
 	char device[10];
 	int storm_size;
 	int space_time;
-};
+}ETHERNET_BRODACAST_STORM,*PETHERNET_BRODACAST_STORM;
 
-struct Ethernet_Multicast_Storm
+typedef struct _ETHERNET_MULTICAST_STORM
 {
 	u_char enet_src[6];
 	char device[10];
 	int storm_size;
 	int space_time;
-};
+}ETHERNET_MULTICAST_STORM,*PETHERNET_MULTICAST_STORM;
 
 
-struct Ethernet_Unicast_Storm
+typedef struct _ETHERNET_UNICAST_STORM
 {
 	u_char enet_dst[6];
 	u_char enet_src[6];
@@ -28,9 +28,9 @@ struct Ethernet_Unicast_Storm
 	int storm_size;
 	int space_time;
 
-};
+}ETHERNET_UNICAST_STORM,*PETHERNET_UNICAST_STORM;
 
-struct Ethernet_Grammar
+typedef struct _ETHERNET_GRAMMAR
 {
 	u_char enet_dst[6];
 	u_char enet_src[6];
@@ -38,23 +38,23 @@ struct Ethernet_Grammar
 
 
 
-};
+}ETHERNET_GRAMMAR,*PETHERNET_GRAMMAR;
 
-struct Ethernet_Fuzzer
+typedef struct _ETHERNET_FUZZER
 {
 	u_char enet_dst[6];
 	u_char enet_src[6];
 	char device[10];
 
 
-};
+}ETHERNET_FUZZER,*PETHERNET_FUZZER;
 
 
-int Ethernet_Brodacast_Storm(struct Ethernet_Brodacast_Storm *a);
-int Ethernet_Multicast_Storm(struct Ethernet_Multicast_Storm *a);
-int Ethernet_Unicast_Storm(struct Ethernet_Unicast_Storm *a);
-int Ethernet_Grammar(struct Ethernet_Grammar *a);
-int Ethernet_Fuzzer(struct Ethernet_Fuzzer *a);
+int Ethernet_Brodacast_Storm(ETHERNET_BRODACAST_STORM *a);
+int Ethernet_Multicast_Storm(ETHERNET_MULTICAST_STORM *a);
+int Ethernet_Unicast_Storm(ETHERNET_UNICAST_STORM *a);
+int Ethernet_Grammar(ETHERNET_GRAMMAR *a);
+int Ethernet_Fuzzer(ETHERNET_FUZZER *a);
 
 
 #endif

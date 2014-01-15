@@ -2,6 +2,8 @@
 #define _NETWORK_H_
 #include  "/usr/include/libnet.h"
 #include "comm.h"
+#include "timer.h"
+#include "sleep.h"
 
 
 #define STORM_TIME 20
@@ -16,10 +18,12 @@ int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,
 
 
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-void Test_Work(/*COMMAND *a*/);
+void Test_Work(COMMAND *a);
+void do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER speed,int send_size,int len ,bool *skip_timestamp);
 
 #ifdef __cplusplus
 }

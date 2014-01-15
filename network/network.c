@@ -4,12 +4,15 @@
 #include <pthread.h>
 #include "arp.h"
 #include "ethernet.h"
-#include  "network.h"
-#include  "comm.h"
+#include "network.h"
+#include "comm.h"
 #include "zlog.h"
+#include "timer.h"
+#include "sleep.h"
+#include "define.h"
 
 
-
+#define USERDEF_TIMER 1
 
 
 extern LIST_ENTRY mission_list;
@@ -19,6 +22,7 @@ extern pthread_rwlock_t rwlock_run;
 extern ENV *env;
 extern RUNNING_MISSION *Running;
 extern zlog_category_t *c;
+
 
 
 int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_time)
@@ -192,6 +196,7 @@ void RUNING_MISSION_W(pthread_t thread_id,MISSION_STATUS status,clock_t start_ti
 
 void Test_MISS(MISSION *mission)
 {
+	zlog_debug(c,"Start Test_MISSION!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	pthread_t thread_id;
 	if (mission->status==RUNNING)
 		{
@@ -237,9 +242,10 @@ void Test_Work(COMMAND *a)
 	memset(run_misson,0,sizeof(MISSION));
 	if(a->ALLGO)
 		{
-
+		zlog_debug(c,"Start ALL START!ORDER:%d,\n",a->order);
 		if(a->order==START)
 			{
+			
 			do{
 				pthread_rwlock_rdlock(&rwlock);
 			  	LIST_ENTRY *current = mission_list.Flink;
@@ -258,15 +264,188 @@ void Test_Work(COMMAND *a)
 				}while(!run_misson->name);
 			}
 		}
-	else if((!a->ALLGO)&&a->type)
+	else 
 		{
-
+		zlog_debug(c,"Start ONE START!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		if(a->order==START)
+			{
+			
+			do{
+				pthread_rwlock_rdlock(&rwlock);
+			  	LIST_ENTRY *current = mission_list.Flink;
+			  	MISSION *entry;
+			  	while(current != &mission_list)
+			  	{
+				  entry = CONTAINING_RECORD(current,MISSION,node);
+				  if(entry->status==RUNNING)
+				  	{
+						memcpy(run_misson,entry,sizeof(MISSION));
+				  	}
+				  current = current->Flink;
+			  	}
+			  	pthread_rwlock_unlock(&rwlock);
+				Test_MISS(run_misson);
+				}while(!run_misson->name);
+			}
 		}
 		
 
 }
 
 
+
+
+void
+do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER speed,int send_size,int len ,bool *skip_timestamp)
+{
+	int userdef_timer=0;
+
+
+    struct timespec adjuster = { 0, 0 };
+    static struct timespec nap = { 0, 0 }, delta_time = {0, 0};
+    struct timeval nap_for;
+    struct timespec nap_this_time;
+    static int32_t nsec_adjuster = -1, nsec_times = -1;
+    static u_int32_t send = 0;      /* accellerator.   # of packets to send w/o sleeping */
+    u_int64_t ppnsec; /* packets per nsec */
+    static int first_time = 1;      /* need to track the first time through for the pps accelerator */
+    static COUNTER skip_length = 0;
+
+
+#ifdef USERDEF_TIMER
+    adjuster.tv_nsec = userdef_timer * 1000;
+#else
+    adjuster.tv_nsec = 0;
+#endif
+
+    /*
+     * this accelerator improves performance by avoiding expensive
+     * time stamps during periods where we have fallen behind in our
+     * sending
+     */
+    if (*skip_timestamp) {
+        if ((COUNTER)len < skip_length) {
+            skip_length -= len;
+            return;
+        }
+
+        skip_length = 0;
+        *skip_timestamp = false;
+    }
+
+    /* accelerator time? */
+    if (send > 0) {
+        send --;
+        return;
+    }
+
+
+        if (timerisset(delta_ctx)) {
+            COUNTER next_tx_us = (send_size + len) * 8 * 1000000;
+            do_div(next_tx_us, speed);  /* bits divided by Mbps = microseconds */
+            COUNTER tx_us = TIMEVAL_TO_MICROSEC(delta_ctx) - TIMEVAL_TO_MICROSEC(&start_time);
+            COUNTER delta_us = (next_tx_us >= tx_us) ? next_tx_us - tx_us : 0;
+            if (delta_us)
+                /* have to sleep */
+                NANOSEC_TO_TIMESPEC(delta_us * 1000, &nap);
+            else {
+                /*
+                 * calculate how many bytes we are behind and don't bother
+                 * time stamping until we have caught up
+                 */
+                timesclear(&nap);
+                skip_length = (tx_us - next_tx_us) * speed;
+                do_div(skip_length, 8 * 1000000);
+                *skip_timestamp = true;
+            }
+        }
+   
+
+    /* 
+     * since we apply the adjuster to the sleep time, we can't modify nap
+     */
+    nap_this_time.tv_sec = nap.tv_sec;
+    nap_this_time.tv_nsec = nap.tv_nsec;
+
+    zlog_debug(c, "packet size %d %d %d\t\tnap ", len, nap.tv_sec, nap.tv_nsec);
+
+
+
+    if (nsec_adjuster < 0)
+         nsec_adjuster = (nap_this_time.tv_nsec % 10000) / 1000;
+
+          /* update in the range of 0-9 */
+      nsec_times = (nsec_times + 1) % 10;
+
+    	if (nsec_times < nsec_adjuster) {
+                    /* sorta looks like a no-op, but gives us a nice round usec number */
+             nap_this_time.tv_nsec = (nap_this_time.tv_nsec / 1000 * 1000) + 1000;
+            } else {
+              nap_this_time.tv_nsec -= (nap_this_time.tv_nsec % 1000);
+            }
+       zlog_debug(c, "(%d)\tnsec_times = %d\tnap adjust: %lu -> %lu", nsec_adjuster, nsec_times, nap.tv_nsec, nap_this_time.tv_nsec);            
+       
+    
+
+    /* don't sleep if nap = {0, 0} */
+    if (!timesisset(&nap_this_time))
+        return;
+
+    zlog_debug(c, "nap_time before delta calc: %d-%d " , nap_this_time.tv_sec, nap_this_time.tv_nsec);
+    get_delta_time(delta_ctx, &delta_time);
+    zlog_debug(c, "delta:    %d-%d                   " , delta_time.tv_sec, delta_time.tv_nsec);
+
+    if (timesisset(&delta_time)) {
+        if (timescmp(&nap_this_time, &delta_time, >)) {
+            timessub(&nap_this_time, &delta_time, &nap_this_time);
+            zlog_debug(c, "timesub: %lu %lu", delta_time.tv_sec, delta_time.tv_nsec);
+        } else { 
+            timesclear(&nap_this_time);
+            zlog_debug(c, "timesclear:%d %d " , delta_time.tv_sec, delta_time.tv_nsec);
+        }
+    }
+
+    /* apply the adjuster... */
+    if (timesisset(&adjuster)) {
+        if (timescmp(&nap_this_time, &adjuster, >)) {
+            timessub(&nap_this_time, &adjuster, &nap_this_time);
+        } else { 
+            timesclear(&nap_this_time);
+        }
+    }
+
+    zlog_debug(c, "Sleeping:     %d-%d              " , nap_this_time.tv_sec, nap_this_time.tv_nsec);
+
+    /*
+     * Depending on the accurate method & packet rate computation method
+     * We have multiple methods of sleeping, pick the right one...
+     */
+    switch (accurate) {
+    case accurate_select:
+        select_sleep(nap_this_time);
+        break;
+
+    case accurate_ioport:
+        ioport_sleep(nap_this_time);
+        break;
+
+    case accurate_gtod:
+        gettimeofday_sleep(nap_this_time);
+        break;
+
+    case accurate_nanosleep:
+        nanosleep_sleep(nap_this_time);
+        break;
+
+    default:
+        zlog_debug(c, "Unknown timer mode %d", accurate);
+    }
+
+
+    zlog_debug(c, "sleep delta:%d-%d " , delta_time.tv_sec, delta_time.tv_nsec);
+
+
+}
 
 
 

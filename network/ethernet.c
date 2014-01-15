@@ -1,7 +1,8 @@
 #include "network.h"
 #include "ethernet.h"
 
-int Ethernet_Brodacast_Storm(struct Ethernet_Brodacast_Storm *a)
+
+int Ethernet_Brodacast_Storm(ETHERNET_BRODACAST_STORM *a)
 {
 	u_char *enet_src=a->enet_src;
 	char *device=a->device;
@@ -75,7 +76,7 @@ return 1;
 
 
 
-int Ethernet_Multicast_Storm(struct Ethernet_Multicast_Storm *a)
+int Ethernet_Multicast_Storm(ETHERNET_MULTICAST_STORM *a)
 {
 	u_char *enet_src=a->enet_src;
 	char *device=a->device;
@@ -151,7 +152,7 @@ return 1;
 }
 
 
-int Ethernet_Unicast_Storm(struct Ethernet_Unicast_Storm *a)
+int Ethernet_Unicast_Storm(ETHERNET_UNICAST_STORM *a)
 {
 	u_char *enet_dst=a->enet_dst;
 	u_char *enet_src=a->enet_src;
@@ -227,7 +228,7 @@ int Ethernet_Unicast_Storm(struct Ethernet_Unicast_Storm *a)
 }
 
 
-int Ethernet_Grammar(struct Ethernet_Grammar *a)
+int Ethernet_Grammar(ETHERNET_GRAMMAR *a)
 {
 	u_char *enet_dst=a->enet_dst;
 	u_char *enet_src=a->enet_src;
@@ -318,8 +319,15 @@ return 1;
 
 }
 
-int Ethernet_Fuzzer(struct Ethernet_Fuzzer *a)
+int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 {
+
+	struct timeval last = { 0, 0 };
+	delta_t delta_ctx;
+	init_delta_time(&delta_ctx);
+	struct timeval start_time;
+	gettimeofday(&start_time,NULL);
+	
 	u_char *enet_dst=a->enet_dst;
 	u_char *enet_src=a->enet_src;
 	char *device=a->device;
@@ -349,6 +357,7 @@ int Ethernet_Fuzzer(struct Ethernet_Fuzzer *a)
 		  return 0;;
 	  }
 	srand(time(NULL));
+	
 	while(protocol_type<=0xffff)
 	{
 		
@@ -388,7 +397,7 @@ int Ethernet_Fuzzer(struct Ethernet_Fuzzer *a)
 			{
 				fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
 			}
-
+		do_sleep(accurate_select,&delta_ctx,start_time,100,&send_size,packet_s,true);
 		  
 		  libnet_clear_packet(l);
 		  protocol_type=protocol_type+0x0001;
