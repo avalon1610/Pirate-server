@@ -17,7 +17,8 @@ extern RUNNING_MISSION *Running;
 extern zlog_category_t *c;
 
 int command_control(COMMAND cmd)
-{
+{	
+	pthread_t  pid;
     if (Running == NULL)
         return false;
     switch(cmd.type)
@@ -30,8 +31,11 @@ int command_control(COMMAND cmd)
                 case START:
                 case RESUME:
                     if (Running->running_thread_id == 0) 
-                    {
-                        pthread_create(NULL,NULL,(void *)Test_Work,&cmd);
+                    {	
+                  
+                
+                        pthread_create(&pid,NULL,(void *)Test_Work,&cmd);
+						
                     } 
                     break;
                 case PAUSE:

@@ -6,6 +6,7 @@
 #include "ethernet.h"
 #include  "network.h"
 #include  "comm.h"
+#include "zlog.h"
 
 
 
@@ -17,6 +18,7 @@ extern pthread_rwlock_t rwlock_env;
 extern pthread_rwlock_t rwlock_run;
 extern ENV *env;
 extern RUNNING_MISSION *Running;
+extern zlog_category_t *c;
 
 
 int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_time)
@@ -226,6 +228,7 @@ void Test_MISS(MISSION *mission)
 
 void Test_Work(COMMAND *a)
 {
+	zlog_debug(c,"Start Test_Work!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
 	int err;
 	pthread_t ptemp;
