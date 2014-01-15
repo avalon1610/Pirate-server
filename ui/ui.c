@@ -17,7 +17,7 @@ extern RUNNING_MISSION *Running;
 extern zlog_category_t *c;
 
 int command_control(COMMAND cmd)
-{	
+{
 	pthread_t  pid;
     if (Running == NULL)
         return false;
@@ -30,17 +30,11 @@ int command_control(COMMAND cmd)
             {
                 case START:
                 case RESUME:
-                    if (Running->running_thread_id == 0) 
-                    {	
-                  
-                
+                    if (Running->running_thread_id == 0)
                         pthread_create(&pid,NULL,(void *)Test_Work,&cmd);
-						
-                    } 
                     break;
                 case PAUSE:
                 case STOP:
-                    
                     break;
                 default:
                     break;
@@ -56,7 +50,7 @@ static int parse_mission(const char *data,char *msg)
     char *param;
     cJSON *root;
     cJSON *type_entry;
-    MISSION *mission; 
+    MISSION *mission;
 
     if (data == NULL)
         return false;
@@ -110,7 +104,7 @@ static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
     char reply[256] = {0};
     char error_msg[32] = {0};
     char *post_data;
-    char *origin;  
+    char *origin;
     post_data = get_post_data(conn);
     origin = (char *)mg_get_header(conn,"Origin");
     if (origin == NULL)
@@ -251,9 +245,9 @@ static int scan_setup(struct mg_connection *conn)
 }
 
 int run_server(void)
-{	
+{
     struct mg_server *server;
-    
+ 
     // Create and configure the server
     server = mg_create_server(NULL);
     mg_set_option(server,"listening_port","80");
