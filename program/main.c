@@ -8,7 +8,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "zlog.h"
-#include "lib_ui.h"
+#include "ui.h"
 #include "network.h"
 #include "comm.h"
 

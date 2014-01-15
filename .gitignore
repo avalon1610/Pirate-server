@@ -1,5 +1,4 @@
 *.o
-*.a
-bin/
 *.swp
+*.pyc
 
