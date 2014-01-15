@@ -52,3 +52,14 @@ ioport_sleep(const struct timespec nap)
     usec = nap.tv_nsec;
 
 }
+
+void 
+select_sleep(const struct timespec nap)
+{
+    struct timeval timeout;
+
+    TIMESPEC_TO_TIMEVAL(&timeout, &nap);
+
+    if (select(0, NULL, NULL, NULL, &timeout) < 0)
+        warnx("select_sleep() returned early due to error: %s", strerror(errno));
+}

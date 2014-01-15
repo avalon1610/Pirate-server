@@ -1,3 +1,5 @@
+#ifndef __SLEEP_H__
+#define __SLEEP_H__
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -7,10 +9,9 @@
 //#include <sys/event.h>
 #include <sys/io.h>
 
-
-
-#ifndef __SLEEP_H__
-#define __SLEEP_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static inline void
 nanosleep_sleep(struct timespec nap)
@@ -44,7 +45,7 @@ gettimeofday_sleep(struct timespec nap)
  * Apple's AbsoluteTime functions give at least .1usec precision
  * which is pretty damn sweet
  */
-static inline void
+inline void
 absolute_time_sleep(struct timespec nap)
 {
     AbsoluteTime sleep_until, naptime, time_left;
@@ -72,15 +73,7 @@ absolute_time_sleep(struct timespec nap)
  * for furture reference
  */
 void 
-select_sleep(const struct timespec nap)
-{
-    struct timeval timeout;
-
-    TIMESPEC_TO_TIMEVAL(&timeout, &nap);
-
-    if (select(0, NULL, NULL, NULL, &timeout) < 0)
-        warnx("select_sleep() returned early due to error: %s", strerror(errno));
-}
+select_sleep(const struct timespec nap);
 
 
 /*
@@ -96,5 +89,8 @@ extern int ioport_sleep_value;
 void ioport_sleep_init(void);
 
 void ioport_sleep(const struct timespec nap);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SLEEP_H__ */

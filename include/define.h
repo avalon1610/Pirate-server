@@ -21,7 +21,7 @@
 #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1 /* don't re-include it in pcap.h */
 #endif
 
-#include "/usr/include/pcap.h"
+//#include "/usr/include/pcap.h"
 
  
 /* 
@@ -49,7 +49,7 @@ typedef struct tcpr_arp_hdr arp_hdr_t;
 typedef struct tcpr_dnsv4_hdr dnsv4_hdr_t;
  
 /* our custom typdefs/structs */
-
+/*
 struct tcpr_bpf_s {
     char *filter;
     int optimize;
@@ -58,7 +58,7 @@ struct tcpr_bpf_s {
 typedef struct tcpr_bpf_s tcpr_bpf_t;
 
  typedef struct tcpr_xX_s tcpr_xX_t;
- 
+*/ 
  /* number of ports 0-65535 */
  #define NUM_PORTS 65536
  struct tcpr_services_s {
