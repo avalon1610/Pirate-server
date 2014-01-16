@@ -1,7 +1,6 @@
 #ifndef _ARP_H_
 #define _ARP_H_
 
-
 typedef struct _ARP_REQUEST_STORM
 {
 

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <linux/limits.h>
 #include "zlog.h"
 #include "ui.h"
 #include "network.h"
@@ -22,7 +23,22 @@ zlog_category_t *c;
 
 int Init()
 {
-    int rc = zlog_init("/etc/zlog.conf");
+    char exe_path[PATH_MAX] = {0};
+    if (-1 == readlink("/proc/self/exe",exe_path,PATH_MAX))
+    {
+        puts("get execute path error!");
+        return false;
+    }
+    char *pos = strrchr(exe_path,'/');
+    if (pos == NULL)
+    {
+        puts("invalid exe path!");
+        return false;
+    }
+    *(pos+1) = '\0';
+    char config_path[PATH_MAX] = {0};
+    sprintf(config_path,"%szlog.conf",exe_path);
+    int rc = zlog_init(config_path);
     if (rc)
     {
         printf("init zlog failed:%d\n",rc);
