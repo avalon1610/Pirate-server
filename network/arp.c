@@ -38,7 +38,7 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 				errbuf);								/* errbuf */
 	if (l == NULL)
    	{
-	   DbgPrint( "%s", errbuf);
+	   zlog_debug(c, "%s\n", errbuf);
 	   return 0;
    	}
    	else
@@ -61,7 +61,7 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 	            0);                                     /* libnet id */
     if (t == -1)
     {
-        DbgPrint("Can't build ARP header: %s\n", libnet_geterror(l));
+        zlog_debug(c,"Can't build ARP header: %s\n", libnet_geterror(l));
         return 0;
     }
     t = libnet_autobuild_ethernet(
@@ -76,11 +76,11 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
     }
     if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
     {
-        DbgPrint("%s", libnet_geterror(l));
+        zlog_debug(c,"%s", libnet_geterror(l));
     }
     else
     {
-        DbgPrint("packet size: %d\n", packet_s);
+        zlog_debug(c,"packet size: %d\n", packet_s);
         libnet_adv_free_packet(l, packet);
     }
 

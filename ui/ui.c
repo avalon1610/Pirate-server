@@ -180,7 +180,6 @@ static int parse_runner(const char *data,char *msg)
     LIST_ENTRY *current = mission_list.Flink;
     MISSION *entry;
 
-    zlog_debug(c,"3\n");
     if (data == NULL)
         return ret;
 
@@ -188,7 +187,7 @@ static int parse_runner(const char *data,char *msg)
     order = cJSON_GetObjectItem(root,"order")->valueint;
     type = cJSON_GetObjectItem(root,"type")->valueint;
 
-    zlog_debug(c,"get order:%d,type:%d\n",order,type);
+    zlog_debug(c,"runner get order:%d,type:%d\n",order,type);
     pthread_rwlock_rdlock(&rwlock);
     while (current != &mission_list)
     {
@@ -202,7 +201,6 @@ static int parse_runner(const char *data,char *msg)
     }
     pthread_rwlock_unlock(&rwlock);
 
-    zlog_debug(c,"aaaa\n");
     if (ret)
     {
         COMMAND cmd;
