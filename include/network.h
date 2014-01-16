@@ -3,9 +3,21 @@
 #include  "/usr/include/libnet.h"
 #include "comm.h"
 #include "timer.h"
+#include "ethernet.h"
 
 
-#define STORM_TIME 20
+#define STORM_TIME 600
+
+#define do_div(n,base) ({          \
+    uint32_t __base = (base);       \
+    uint32_t __rem;           \
+    __rem = ((uint64_t)(n)) % __base;     \
+    (n) = ((uint64_t)(n)) / __base;       \
+    __rem;              \
+   })
+
+
+uint32_t __div64_32(uint64_t *n, uint32_t base);
 
 int send_storm(libnet_t *lib_net,int size,int pcap_size);
 u_int32_t Get_long_address(u_char *ip_address);
@@ -22,7 +34,7 @@ int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,
 extern "C" {
 #endif
 void Test_Work(COMMAND *a);
-void do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER speed,int send_size,int len ,bool *skip_timestamp);
+void do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval *start_time,COUNTER speed,COUNTER send_size,int len ,bool *skip_timestamp);
 
 #ifdef __cplusplus
 }

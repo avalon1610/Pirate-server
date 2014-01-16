@@ -1,6 +1,8 @@
 #include "network.h"
 #include "ethernet.h"
+#include "zlog.h"
 
+extern zlog_category_t *c;
 
 int Ethernet_Brodacast_Storm(ETHERNET_BRODACAST_STORM *a)
 {
@@ -321,18 +323,20 @@ return 1;
 
 int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 {
-
+	zlog_debug(c,"Start Ethernet_Fuzzer\n");
+	bool skip_timestamp = false;
 	struct timeval last = { 0, 0 };
 	delta_t delta_ctx;
 	init_delta_time(&delta_ctx);
 	struct timeval start_time;
 	gettimeofday(&start_time,NULL);
+	COUNTER bytes_sent=0;
+
 	
 	u_char *enet_dst=a->enet_dst;
 	u_char *enet_src=a->enet_src;
 	char *device=a->device;
-
-	int c;
+	int err;
 	int send_size=0;
 	//u_int32_t i;
 	libnet_t *l;
@@ -353,7 +357,7 @@ int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 
 	  if (l == NULL)
 	  {
-		  fprintf(stderr, "%s", errbuf);
+		  zlog_debug(c, "%s", errbuf);
 		  return 0;;
 	  }
 	srand(time(NULL));
@@ -363,7 +367,12 @@ int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 		
 		
 		r=rand()%1500;
+		zlog_debug(c,"r:%d\n",r);
+	if(r)
+		{
 		u_char *payload=(u_char *)malloc(r+1);
+
+		
 		
 		Create_Random(r,payload);
 		t = libnet_build_ethernet(
@@ -376,7 +385,7 @@ int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 						0); 						  /* libnet handle */
 		  if (t == -1)
 		  {
-			  fprintf(stderr, "Can't build ethernet header: %s\n",
+			  zlog_debug(c, "Can't build ethernet header: %s\n",
 					  libnet_geterror(l));
 			  return 0;
 
@@ -385,24 +394,30 @@ int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 
 		  if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
 		  {
-			  fprintf(stderr, "%s", libnet_geterror(l));
+			  zlog_debug(c, "%s", libnet_geterror(l));
 		  }
 		  else
 		  {
 		  
 			libnet_adv_free_packet(l, packet);
 		  }
-		  c = libnet_write(l);
-			if (c == -1)
+		  err = libnet_write(l);
+			if (err == -1)
 			{
-				fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 			}
-		do_sleep(accurate_select,&delta_ctx,start_time,100,&send_size,packet_s,true);
-		  
+		do_sleep(accurate_select,&delta_ctx,&start_time,1000000.0,bytes_sent,packet_s,&skip_timestamp);
+		bytes_sent=bytes_sent+packet_s;
+		if (!skip_timestamp)
+			{
+                start_delta_time(&delta_ctx);
+				
+			}
 		  libnet_clear_packet(l);
 		  protocol_type=protocol_type+0x0001;
 		  
-		 free(payload); 
+		 free(payload);
+		}
 	}
 
 

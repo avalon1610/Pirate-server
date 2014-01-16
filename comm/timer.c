@@ -2,6 +2,7 @@
 #include "timer.h"
 #include "define.h"
 #include <stdlib.h>
+#include "network.h"
 
 /* Miscellaneous timeval routines */
 
