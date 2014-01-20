@@ -27,7 +27,7 @@ extern zlog_category_t *c;
 
 
 
-int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_time)
+int send_storm_random_time(libnet_t *lib_net,COUNTER speed,int pcap_size,int test_time,bool top_speed)
 {
 	int R;
 	srand((unsigned)time(NULL));
@@ -36,15 +36,11 @@ int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_ti
 	clock_t s_e_t=0;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
-	while(end<=storm_time)
+	while(end<=test_time)
 			{	
-				l=rand()%10;
-				if((clock()-s_e_t)/CLOCKS_PER_SEC==R)
-					{	
-					send_storm(lib_net,size,pcap_size); 
-					s_e_t=clock();
-					}
-					end = (clock() - start)/CLOCKS_PER_SEC;
+				l=rand()%10;	
+				send_storm(lib_net,speed,pcap_size,l,top_speed); 
+				end = (clock() - start)/CLOCKS_PER_SEC;
 				
 					
 			}
@@ -52,51 +48,60 @@ int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_ti
 	
 }
 
-int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,int set_time)
+int send_storm_set_time(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t test_time,clock_t storm_time,bool top_speed)
 {
 	int l;
 	clock_t s_e_t=0;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 
-	while(end <= storm_time)
-			{	
-			
-				if((clock()-s_e_t)/CLOCKS_PER_SEC==set_time)
-					{	
+	while(end <= test_time)
+			{						
 					
-					send_storm(lib_net,size,pcap_size); 
-					s_e_t=clock();
-					}
-			
-					end = (clock() - start)/CLOCKS_PER_SEC;
-				
-					
+					send_storm(lib_net,speed,pcap_size,storm_time,top_speed); 
+					end = (clock() - start)/CLOCKS_PER_SEC;				
 			}
 
 	return 1;
 }
 
 
-int send_storm(libnet_t *lib_net,int size,int pcap_size)
-{	int c;
+int send_storm(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t storm_time,bool top_speed)
+{	
+	int err;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 
-	
-		int send=0;
-		while(send<size)
-			{
-				c =	libnet_write(lib_net);
-				send=send+pcap_size;
-				  if (c == -1)
-	    		{
-	       			 fprintf(stderr, "Write error: %s\n", libnet_geterror(lib_net));
-	        			return -1;
-	    		}
-			}
+	bool skip_timestamp = false;
+	struct timeval last = { 0, 0 };
+	delta_t delta_ctx;
+	init_delta_time(&delta_ctx);
+	struct timeval start_time;
+	gettimeofday(&start_time,NULL);
+	COUNTER bytes_sent=0;
 
-		end = (clock() - start)/CLOCKS_PER_SEC;
+	while(end<=storm_time)
+		{
+			err =libnet_write(lib_net);
+			if (err == -1)
+	    	{
+	       			zlog_debug(c, "Write error: %s\n", libnet_geterror(lib_net));
+	        			return -1;
+	    	}
+			if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,pcap_size,&skip_timestamp);
+					bytes_sent=bytes_sent+pcap_size;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
+			end = (clock() - start)/CLOCKS_PER_SEC;
+		}
+
+		
 	
 	return 1;
 
@@ -214,8 +219,6 @@ void Test_MISS(MISSION *mission)
 						memcpy(a->enet_src,env->host_mac,6);
 						memcpy(a->device,env->device,6);
 						pthread_rwlock_unlock(&rwlock_env); 
-						a->storm_size=cJSON_GetObjectItem(mission->param,"storm_size")->valueint;
-						a->space_time=cJSON_GetObjectItem(mission->param,"space_time")->valueint;
 						pthread_create (&thread_id, NULL, (void *)ARP_Request_Storm, (void *)&a); 
 						pthread_join (thread_id, NULL);
 						break;
@@ -332,6 +335,8 @@ uint32_t __div64_32(uint64_t *n, uint32_t base)
 void
 do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval *start_time,COUNTER speed,COUNTER send_size,int len ,bool *skip_timestamp)
 {
+	zlog_debug(c,"start calc sleep " TIMESPEC_FORMAT,(delta_ctx)->tv_sec,(delta_ctx)->tv_usec );
+	 
 	int userdef_timer=0;
 
 
@@ -375,18 +380,20 @@ do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval *start_time,COUNTE
 
 
   
-		zlog_debug(c,"\nsend_size:%d\n",send_size);
+		zlog_debug(c,"send_size:%d\n",send_size);
        if (timerisset(delta_ctx)) {
-            COUNTER next_tx_us = (send_size + len) * 8 * 1000000;
-            do_div(next_tx_us, speed);  /* bits divided by Mbps = microseconds */
-           COUNTER tx_us = TIMEVAL_TO_MICROSEC(delta_ctx) - TIMEVAL_TO_MICROSEC(start_time);
+            COUNTER next_tx_us = (send_size+len) * 8 * 100000;
+            do_div_64(next_tx_us, speed);  /* bits divided by Mbps = microseconds */
+			zlog_debug(c,"next_tx_us: %d\n",next_tx_us);
+           	COUNTER tx_us = TIMEVAL_TO_MICROSEC(delta_ctx) - TIMEVAL_TO_MICROSEC(start_time);
             COUNTER delta_us = (next_tx_us >= tx_us) ? next_tx_us - tx_us : 0;
-			
+			zlog_debug(c,"tx_us: %d\n",tx_us);
+			zlog_debug(c,"delta_us: %d\n",delta_us);
             if (delta_us)
                 /* have to sleep */
             	{
-
-              NANOSEC_TO_TIMESPEC(delta_us * 1000, &nap);
+					zlog_debug(c,"have to sleep %d\n",delta_us);
+              		NANOSEC_TO_TIMESPEC(delta_us * 1000, &nap);
             	}
             else {
                 /*
@@ -395,7 +402,8 @@ do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval *start_time,COUNTE
                  */
             	timesclear(&nap);
                 skip_length = (tx_us - next_tx_us) * speed;
-                do_div(skip_length, 8 * 1000000);
+                do_div_64(skip_length, 8 * 1000000);
+				zlog_debug(c,"skip_length %d\n",skip_length);
                 *skip_timestamp = true;
             }
         }

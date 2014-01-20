@@ -4,13 +4,10 @@
 
 
  /* should packet counters be 32 or 64 bit? --enable-64bit */
-#ifdef ENABLE_64BITS
+
 #define COUNTER unsigned long long
 #define COUNTER_SPEC "%llu"
-#else
-#define COUNTER unsigned long
-#define COUNTER_SPEC "%lu"
-#endif
+
 
 #ifdef HAVE_BPF
 #include <net/bpf.h>

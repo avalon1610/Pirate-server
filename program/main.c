@@ -86,13 +86,21 @@ int main()
 
 int test_main()
 {
-		ETHERNET_FUZZER a;
+	if (!Init())
+		 return -1;
+
+	ETHERNET_FUZZER a;
 	//a=(ETHERNET_FUZZER *)malloc(sizeof(ETHERNET_FUZZER));
 	memcpy(a.device,"eth0",5);
 	u_char b[6]={0x00,0x01,0x02,0x03,0x04,0x05};
 	u_char d[6]={0x02,0x01,0x02,0x03,0x04,0x05};
 	memcpy(a.enet_dst,b,6);
 	memcpy(a.enet_src,d,6);
+	a.speed=10000.0;
+	a.top_speed=false;
 	Ethernet_Fuzzer(&a);
+
+
+	
 
 }

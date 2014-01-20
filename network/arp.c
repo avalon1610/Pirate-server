@@ -19,10 +19,10 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
 	u_char *enet_src=a->enet_src;
 	u_char *enet_dst=a->enet_dst;
 	char *device=a->device;
-	int storm_size=a->storm_size;
 	int test_time=a->test_time;
-	int space_time=a->space_time;
-	zlog_debug(c,"mission arg:device:%s,storm_size:%d,test_time:%d,space_time:%d\n");
+	int storm_time=a->storm_time;
+	bool top_speed=a->top_speed;
+	COUNTER speed=a->speed;
 	
 	u_int32_t d;
 	u_int32_t s;
@@ -84,13 +84,13 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
         libnet_adv_free_packet(l, packet);
     }
 
-	if(space_time)
+	if(storm_time)
 		{
-			send_storm_set_time(l,storm_size,packet_s,test_time,space_time);
+			send_storm_set_time(l,speed,packet_s,test_time,storm_time,top_speed);
 		}
 	else
 		{
-			send_storm_random_time(l,storm_size,packet_s,test_time);
+			send_storm_random_time(l,speed,packet_s,test_time,top_speed);
 		}
 
     libnet_destroy(l);
@@ -109,9 +109,10 @@ int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a)
 	u_char *enet_src=a->enet_src;
 	u_char *enet_dst=a->enet_dst;
 	char *device=a->device;
-	int storm_size=a->storm_size;
 	int test_time=a->test_time;
-	int space_time=a->space_time;
+	int storm_time=a->storm_time;
+	bool top_speed=a->top_speed;
+	COUNTER speed=a->speed;
 	
 	int last=1;
 	u_int32_t i;
@@ -130,7 +131,7 @@ int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a)
 				errbuf);								/* errbuf */
 	if (l == NULL)
    	{
-	   fprintf(stderr, "%s", errbuf);
+	   zlog_debug(c, "%s", errbuf);
 	   return 0;
    	}
    	else
@@ -153,7 +154,7 @@ int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a)
 	            0);                                     /* libnet id */
     if (t == -1)
     {
-        fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+        zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
         return 0;
     }
     t = libnet_autobuild_ethernet(
@@ -162,28 +163,29 @@ int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a)
             l);                                     /* libnet handle */
     if (t == -1)
     {
-        fprintf(stderr, "Can't build ethernet header: %s\n",
+        zlog_debug(c, "Can't build ethernet header: %s\n",
                 libnet_geterror(l));
         return 0;
     }
     if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
     {
-        fprintf(stderr, "%s", libnet_geterror(l));
+        zlog_debug(c, "%s", libnet_geterror(l));
     }
     else
     {
-        fprintf(stderr, "packet size: %d\n", packet_s);
+        zlog_debug(c, "packet size: %d\n", packet_s);
         libnet_adv_free_packet(l, packet);
     }
 	
-	if(space_time)
+	if(storm_time)
 		{
-			send_storm_set_time(l,storm_size,packet_s,STORM_TIME,space_time);
+			send_storm_set_time(l,speed,packet_s,test_time,storm_time,top_speed);
 		}
 	else
 		{
-			send_storm_random_time(l,storm_size,packet_s,STORM_TIME);
+			send_storm_random_time(l,speed,packet_s,test_time,top_speed);
 		}
+
 
 
 
@@ -196,12 +198,26 @@ int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a)
 
 int ARP_Grammear(ARP_GRAMMEAR *a)
 {		
+
+	
+	bool skip_timestamp = false;
+	struct timeval last = { 0, 0 };
+	delta_t delta_ctx;
+	init_delta_time(&delta_ctx);
+	struct timeval start_time;
+	gettimeofday(&start_time,NULL);
+	COUNTER bytes_sent=0;
+
+	
 	u_char *ip_dst=a->ip_dst;
 	u_char *enet_src=a->enet_src;
 	u_char *enet_dst=a->enet_dst;
 	char *device=a->device;
+	COUNTER speed=a->speed;
+	bool top_speed=a->top_speed;
+	
 
-		int c;
+		int err;
 		u_int32_t i;
 		u_int32_t d;
 		libnet_t *l;
@@ -267,7 +283,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -276,28 +292,37 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
 			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
 			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
+				zlog_debug(c, "%s", libnet_geterror(l));
 			}
 			else
 			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
+				zlog_debug(c, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			c=libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
+			if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
+			if (err == -1)
 		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 			libnet_clear_packet(l);
 		}
@@ -321,7 +346,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -330,29 +355,34 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
 			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
 			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
+				zlog_debug(c, "%s", libnet_geterror(l));
 			}
 			else
 			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
+				zlog_debug(c, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
 			libnet_write(l);
-			if (c == -1)
+			if (err == -1)
 		    {
 		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+			if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 		}
 
@@ -377,7 +407,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -386,29 +416,34 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
 			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
 			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
+				zlog_debug(c, "%s", libnet_geterror(l));
 			}
 			else
 			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
+				zlog_debug(c, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
 			libnet_write(l);
-			if (c == -1)
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		 	if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 		}
@@ -433,7 +468,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -442,29 +477,34 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
 			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
 			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
+				zlog_debug(c, "%s", libnet_geterror(l));
 			}
 			else
 			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
+				zlog_debug(c, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err  == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		 	if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 		}
@@ -511,16 +551,21 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		 	 if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 		
@@ -543,7 +588,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -552,7 +597,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
@@ -565,16 +610,21 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err  == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		  	 if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 		}
@@ -601,7 +651,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -610,7 +660,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
@@ -623,18 +673,23 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err  == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		   	 if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
-			}
+		}
 		
 		for(m=0;m<20;m++)
 		{	
@@ -655,7 +710,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -664,7 +719,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
@@ -677,16 +732,21 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		    if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 		}
@@ -711,7 +771,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -720,29 +780,34 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
 			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
 			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
+				zlog_debug(c, "%s", libnet_geterror(l));
 			}
 			else
 			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
+				zlog_debug(c, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		  	 if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 		
@@ -765,7 +830,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -774,7 +839,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
@@ -787,16 +852,21 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		  	 if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 
@@ -819,7 +889,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -841,16 +911,21 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		  	 if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 
@@ -874,7 +949,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						0); 									/* libnet id */
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
+				zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
 				return 0;
 			}
 			t = libnet_autobuild_ethernet(
@@ -883,7 +958,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 					l); 		
 			if (t == -1)
 			{
-				fprintf(stderr, "Can't build ethernet header: %s\n",
+				zlog_debug(c, "Can't build ethernet header: %s\n",
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
@@ -896,16 +971,21 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 				//fprintf(stderr, "packet size: %d\n", packet_s);
 				libnet_adv_free_packet(l, packet);
 			}
-			c = libnet_write(l);
-			if (c == -1)
+			err = libnet_write(l);
+			if (err == -1)
 		    {
-		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
+		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
-		    else
-		    {
-		        //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-		         //       "check the wire.\n", c, libnet_cq_getlabel(l));
-		    }
+		   	 if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
 			libnet_clear_packet(l);
 			}
 		}
@@ -929,9 +1009,10 @@ int ARP_Cache_Saturation_Storm(ARP_CACHE_SATURATION_STORM *a)
 	u_char *ip_dst=a->ip_dst;
 	u_char *enet_dst=a->enet_dst;
 	char *device=a->device;
-	int storm_size=a->storm_size;
-	int space_time=a->space_time;
-	int c;
+	COUNTER speed=a->speed;
+	int storm_time=a->storm_time;
+	bool top_speed=a->top_speed;
+	int test_time=a->test_time;
 	
    
     libnet_t *l;
@@ -950,7 +1031,7 @@ int ARP_Cache_Saturation_Storm(ARP_CACHE_SATURATION_STORM *a)
 
 	  if (l == NULL)
 	  {
-		  fprintf(stderr, "%s", errbuf);
+		  zlog_debug(c, "err:%s", errbuf);
 		  return 0;;
 	  }
 	
@@ -963,111 +1044,117 @@ int ARP_Cache_Saturation_Storm(ARP_CACHE_SATURATION_STORM *a)
 	int R=0;
 	srand((unsigned)time(NULL));
 	
-while((end-start)/CLOCKS_PER_SEC<=STORM_TIME){
-	if(space_time && (end-test)/CLOCKS_PER_SEC == space_time )
-		{
-			ARP_Cache_Send(l,enet_dst,storm_size,d);
-			test=clock();
-		}
-	else
-		{
+	while((end-start)/CLOCKS_PER_SEC<=test_time){
+		if(storm_time)
+			{
+				ARP_Cache_Send(l,enet_dst,speed,storm_time,d);
+			}
+		else
+			{	R=rand()%10;
+				ARP_Cache_Send(l,enet_dst,speed,R,d)	;
 			
-			if((end-test)/CLOCKS_PER_SEC == R)
-				{	
-				
-					ARP_Cache_Send(l,enet_dst,storm_size,d)	;
-					test=clock();
-					R=rand()%10;
-					
-				}
-		}
-		end =clock();
-}
+			}
+			end =clock();
+	}
 	
 	libnet_destroy(l);		 
 	return 1;
 }
 
-int ARP_Cache_Send(libnet_t *l,u_char *enet_dst,int storm_size,u_int32_t d)
+int ARP_Cache_Send(libnet_t *l,u_char *enet_dst,COUNTER speed,clock_t storm_time,u_int32_t d,bool top_speed)
 {
 	u_char enet_src[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	int send_size=0;
-	int c;
+	int err;
 	libnet_ptag_t t;
     u_int8_t *packet;
     u_int32_t packet_s;
-while(send_size<= storm_size)
-{
-	int rand_s_ip=rand();
-	int rand2=rand();
-	int rand3=rand();
-   	memcpy(enet_src,&rand2,sizeof(int));
-   	memcpy(enet_src+4,&rand3,2);
+
+
+	clock_t start = clock();
+    clock_t end = (clock() - start)/CLOCKS_PER_SEC;
+
+	bool skip_timestamp = false;
+	struct timeval last = { 0, 0 };
+	delta_t delta_ctx;
+	init_delta_time(&delta_ctx);
+	struct timeval start_time;
+	gettimeofday(&start_time,NULL);
+	COUNTER bytes_sent=0;
+
 	
-	 t = libnet_build_arp(
-			 ARPHRD_ETHER,							 /* hardware addr */
-			 ETHERTYPE_IP,							 /* protocol addr */
-			 6, 									 /* hardware addr size */
-			 4, 									 /* protocol addr size */
-			 ARPOP_REPLY,							 /* operation type */
-			 enet_src,								 /* sender hardware addr */
-			 (u_int8_t *)&rand_s_ip,				   /* sender protocol addr */
-			 enet_dst,								 /* target hardware addr */
-			 (u_int8_t *)&d,						 /* target protocol addr */
-			 NULL,									 /* payload */
-			 0, 									 /* payload size */
-			 l, 									 /* libnet context */
-			 0);									 /* libnet id */
-	 if (t == -1)
-	 {
-		 fprintf(stderr, "Can't build ARP header: %s\n", libnet_geterror(l));
-	 }
+	while(end<=storm_time)
+		{
+			int rand_s_ip=rand();
+			int rand2=rand();
+			int rand3=rand();
+		   	memcpy(enet_src,&rand2,sizeof(int));
+		   	memcpy(enet_src+4,&rand3,2);
+			
+			 t = libnet_build_arp(
+					 ARPHRD_ETHER,							 /* hardware addr */
+					 ETHERTYPE_IP,							 /* protocol addr */
+					 6, 									 /* hardware addr size */
+					 4, 									 /* protocol addr size */
+					 ARPOP_REPLY,							 /* operation type */
+					 enet_src,								 /* sender hardware addr */
+					 (u_int8_t *)&rand_s_ip,				   /* sender protocol addr */
+					 enet_dst,								 /* target hardware addr */
+					 (u_int8_t *)&d,						 /* target protocol addr */
+					 NULL,									 /* payload */
+					 0, 									 /* payload size */
+					 l, 									 /* libnet context */
+					 0);									 /* libnet id */
+			 if (t == -1)
+			 {
+				 zlog_debug(c, "Can't build ARP header: %s\n", libnet_geterror(l));
+			 }
 
-   	t = libnet_build_ethernet(
-				   enet_dst,						/* 目标主机的MAC地址 */
-				   enet_src,						/* 发送主机的MAC地址 */
-				   ETHERTYPE_ARP,						 /* 以太网帧类型，这里是ARP */
-				   NULL,
-				   0,
-				   l,
-				   0);
-	// t = libnet_autobuild_ethernet(
-   //		 enet_dst,								 /* ethernet destination */
-	   //	 ETHERTYPE_ARP, 						 /* protocol type */
-	   //	 l);									 /* libnet handle */
-	 if (t == -1)
-	 {
-		 fprintf(stderr, "Can't build ethernet header: %s\n",
-				 libnet_geterror(l));
-		 return 0;
+		   	t = libnet_build_ethernet(
+						   enet_dst,						/* 目标主机的MAC地址 */
+						   enet_src,						/* 发送主机的MAC地址 */
+						   ETHERTYPE_ARP,						 /* 以太网帧类型，这里是ARP */
+						   NULL,
+						   0,
+						   l,
+						   0);
 
-	 }
+			 if (t == -1)
+			 {
+				 zlog_debug(c, "Can't build ethernet header: %s\n",
+						 libnet_geterror(l));
+				 return 0;
+
+			 }
 
 
-	 if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-	 {
-		 fprintf(stderr, "%s", libnet_geterror(l));
-	 }
-	 else
-	 {
-	 
-	   send_size=send_size+packet_s;
-	   libnet_adv_free_packet(l, packet);
-	 }
-	 c = libnet_write(l);
-	   if (c == -1)
-	   {
-		   fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
-	   }
-	   else
-	   {
-		   //fprintf(stderr, "Wrote %d byte ARP packet from context \"%s\"; "
-			//		 "check the wire.\n", c, libnet_cq_getlabel(l));
-	   }
-	 
-	 libnet_clear_packet(l);
+			 if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
+			 {
+				 zlog_debug(c, "%s", libnet_geterror(l));
+			 }
+			 else
+			 {
+			 
+			   libnet_adv_free_packet(l, packet);
+			 }
+			 err = libnet_write(l);
+			   if (err == -1)
+			   {
+				   zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
+			   }
+			 	if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					bytes_sent=bytes_sent+packet_s;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
+			end = (clock() - start)/CLOCKS_PER_SEC;
+			 libnet_clear_packet(l);
 
-}
+		}
 
 }
 
