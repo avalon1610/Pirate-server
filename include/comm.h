@@ -10,6 +10,18 @@
 extern "C" {
 #endif
 
+static inline void *NEW(size_t s)
+{
+    void *p = malloc(s);
+    memset(p,0,s);
+    return p;
+}
+
+static inline void DELETE(void *p)
+{
+    free(p);
+}
+
 typedef enum _MISSION_TYPE
 {
     ARP_REQUEST_STORM_ = 0,
