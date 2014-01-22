@@ -4,13 +4,10 @@
 
 
  /* should packet counters be 32 or 64 bit? --enable-64bit */
-#ifdef ENABLE_64BITS
+
 #define COUNTER unsigned long long
 #define COUNTER_SPEC "%llu"
-#else
-#define COUNTER unsigned long
-#define COUNTER_SPEC "%lu"
-#endif
+
 
 #ifdef HAVE_BPF
 #include <net/bpf.h>
@@ -232,15 +229,12 @@ typedef struct tcpr_bpf_s tcpr_bpf_t;
  #define TIMESPEC_TO_MILLISEC(x)  (((x)->tv_sec * 1000) + ((x)->tv_nsec / 1000000))
  #define TIMESPEC_TO_MICROSEC(x)  (((x)->tv_sec * 1000000) + (x)->tv_nsec / 1000)
  #define TIMESPEC_TO_NANOSEC(x) ((u_int64_t)((x)->tv_sec * 1000000000) + ((u_int64_t)(x)->tv_nsec))
- 
-#define do_div(n,base) ({        \
-	 uint32_t __base = (base);	   \
-	 uint32_t __rem;		 \
-	 if (((n) >> 32) == 0) {	 \
-		 __rem = (uint32_t)(n) % __base;   \
-		 (n) = (uint32_t)(n) / __base;	 \
-	 }			  \
-	})
+
+
+
+
+
+
 
 
  #endif /* DEFINES */

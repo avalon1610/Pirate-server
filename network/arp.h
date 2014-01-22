@@ -1,6 +1,9 @@
 #ifndef _ARP_H_
 #define _ARP_H_
 
+#include "define.h"
+#include "mylist.h"
+
 typedef struct _ARP_REQUEST_STORM
 {
 
@@ -9,9 +12,10 @@ typedef struct _ARP_REQUEST_STORM
 		u_char enet_src[6];
 		u_char enet_dst[6];
 		char device[10];
-		int storm_size;
+		COUNTER speed;
 		int test_time;
-		int space_time;
+		int storm_time;
+		bool top_speed;
 
 }ARP_REQUEST_STORM,*PARP_REQUEST_STORM;
 
@@ -22,9 +26,11 @@ typedef struct _APR_HOST_REPLY_STORM
 	u_char enet_src[6];
 	u_char enet_dst[6];
 	char device[10];
-	int storm_size;
+	COUNTER speed;
 	int test_time;
-	int space_time;
+	int storm_time;
+	bool top_speed;
+
 
 }APR_HOST_REPLY_STORM,*PAPR_HOST_REPLY_STORM;
 
@@ -35,6 +41,8 @@ typedef struct _ARP_GRAMMEAR
 	u_char enet_src[6];
 	u_char enet_dst[6];
 	char device[10];
+	bool top_speed;
+	COUNTER speed;
 
 
 }ARP_GRAMMEAR,*PARP_GRAMMEAR;
@@ -44,9 +52,10 @@ typedef struct _ARP_CACHE_SATURATION_StORM
 	u_char ip_dst[16];
 	u_char enet_dst[6];
 	char device[6];
-	int storm_size;
 	int test_time;
-	int space_time;
+	int storm_time;
+	bool top_speed;
+	COUNTER speed;
 
 }ARP_CACHE_SATURATION_STORM,*PARP_CACHE_SATURATION_STORM;
 

@@ -13,6 +13,8 @@
 
 
 #define USERDEF_TIMER 1
+#define dbg_print c
+
 
 
 extern LIST_ENTRY mission_list;
@@ -25,7 +27,7 @@ extern zlog_category_t *c;
 
 
 
-int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_time)
+int send_storm_random_time(libnet_t *lib_net,COUNTER speed,int pcap_size,int test_time,bool top_speed)
 {
 	int R;
 	srand((unsigned)time(NULL));
@@ -34,15 +36,11 @@ int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_ti
 	clock_t s_e_t=0;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
-	while(end<=storm_time)
+	while(end<=test_time)
 			{	
-				l=rand()%10;
-				if((clock()-s_e_t)/CLOCKS_PER_SEC==R)
-					{	
-					send_storm(lib_net,size,pcap_size); 
-					s_e_t=clock();
-					}
-					end = (clock() - start)/CLOCKS_PER_SEC;
+				l=rand()%10;	
+				send_storm(lib_net,speed,pcap_size,l,top_speed); 
+				end = (clock() - start)/CLOCKS_PER_SEC;
 				
 					
 			}
@@ -50,51 +48,60 @@ int send_storm_random_time(libnet_t *lib_net,int size,int pcap_size,int storm_ti
 	
 }
 
-int send_storm_set_time(libnet_t *lib_net,int size,int pcap_size,int storm_time,int set_time)
+int send_storm_set_time(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t test_time,clock_t storm_time,bool top_speed)
 {
 	int l;
 	clock_t s_e_t=0;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 
-	while(end <= storm_time)
-			{	
-			
-				if((clock()-s_e_t)/CLOCKS_PER_SEC==set_time)
-					{	
+	while(end <= test_time)
+			{						
 					
-					send_storm(lib_net,size,pcap_size); 
-					s_e_t=clock();
-					}
-			
-					end = (clock() - start)/CLOCKS_PER_SEC;
-				
-					
+					send_storm(lib_net,speed,pcap_size,storm_time,top_speed); 
+					end = (clock() - start)/CLOCKS_PER_SEC;				
 			}
 
 	return 1;
 }
 
 
-int send_storm(libnet_t *lib_net,int size,int pcap_size)
-{	int c;
+int send_storm(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t storm_time,bool top_speed)
+{	
+	int err;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 
-	
-		int send=0;
-		while(send<size)
-			{
-				c =	libnet_write(lib_net);
-				send=send+pcap_size;
-				  if (c == -1)
-	    		{
-	       			 fprintf(stderr, "Write error: %s\n", libnet_geterror(lib_net));
-	        			return -1;
-	    		}
-			}
+	bool skip_timestamp = false;
+	struct timeval last = { 0, 0 };
+	delta_t delta_ctx;
+	init_delta_time(&delta_ctx);
+	struct timeval start_time;
+	gettimeofday(&start_time,NULL);
+	COUNTER bytes_sent=0;
 
-		end = (clock() - start)/CLOCKS_PER_SEC;
+	while(end<=storm_time)
+		{
+			err =libnet_write(lib_net);
+			if (err == -1)
+	    	{
+	       			zlog_debug(c, "Write error: %s\n", libnet_geterror(lib_net));
+	        			return -1;
+	    	}
+			if(!top_speed)
+				{
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,pcap_size,&skip_timestamp);
+					bytes_sent=bytes_sent+pcap_size;
+					if (!skip_timestamp)
+					{
+			                start_delta_time(&delta_ctx);
+							
+					}
+				}
+			end = (clock() - start)/CLOCKS_PER_SEC;
+		}
+
+		
 	
 	return 1;
 
@@ -212,8 +219,6 @@ void Test_MISS(MISSION *mission)
 						memcpy(a->enet_src,env->host_mac,6);
 						memcpy(a->device,env->device,6);
 						pthread_rwlock_unlock(&rwlock_env); 
-						a->storm_size=cJSON_GetObjectItem(mission->param,"storm_size")->valueint;
-						a->space_time=cJSON_GetObjectItem(mission->param,"space_time")->valueint;
 						pthread_create (&thread_id, NULL, (void *)ARP_Request_Storm, (void *)&a); 
 						pthread_join (thread_id, NULL);
 						break;
@@ -293,11 +298,45 @@ void Test_Work(COMMAND *a)
 }
 
 
+uint32_t __div64_32(uint64_t *n, uint32_t base)
+{
+    uint64_t rem = *n;
+    uint64_t b = base;
+    uint64_t res, d = 1;
+    uint32_t high = rem >> 32;
+
+    /* Reduce the thing a bit first */
+    res = 0;
+    if (high >= base) {
+        high /= base;
+        res = (uint64_t) high << 32;
+        rem -= (uint64_t) (high*base) << 32;
+    }
+
+    while ((int64_t)b > 0 && b < rem) {
+        b = b+b;
+        d = d+d;
+    }
+
+    do {
+        if (rem >= b) {
+            rem -= b;
+            res += d;
+        }
+        b >>= 1;
+        d >>= 1;
+    } while (d);
+
+    *n = res;
+    return rem;
+}
 
 
 void
-do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER speed,int send_size,int len ,bool *skip_timestamp)
+do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval *start_time,COUNTER speed,COUNTER send_size,int len ,bool *skip_timestamp)
 {
+	zlog_debug(c,"start calc sleep " TIMESPEC_FORMAT,(delta_ctx)->tv_sec,(delta_ctx)->tv_usec );
+	 
 	int userdef_timer=0;
 
 
@@ -340,26 +379,36 @@ do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER
     }
 
 
-        if (timerisset(delta_ctx)) {
-            COUNTER next_tx_us = (send_size + len) * 8 * 1000000;
-            do_div(next_tx_us, speed);  /* bits divided by Mbps = microseconds */
-            COUNTER tx_us = TIMEVAL_TO_MICROSEC(delta_ctx) - TIMEVAL_TO_MICROSEC(&start_time);
+  
+		zlog_debug(c,"send_size:%d\n",send_size);
+       if (timerisset(delta_ctx)) {
+            COUNTER next_tx_us = (send_size+len) * 8 * 100000;
+            do_div_64(next_tx_us, speed);  /* bits divided by Mbps = microseconds */
+			zlog_debug(c,"next_tx_us: %d\n",next_tx_us);
+           	COUNTER tx_us = TIMEVAL_TO_MICROSEC(delta_ctx) - TIMEVAL_TO_MICROSEC(start_time);
             COUNTER delta_us = (next_tx_us >= tx_us) ? next_tx_us - tx_us : 0;
+			zlog_debug(c,"tx_us: %d\n",tx_us);
+			zlog_debug(c,"delta_us: %d\n",delta_us);
             if (delta_us)
                 /* have to sleep */
-                NANOSEC_TO_TIMESPEC(delta_us * 1000, &nap);
+            	{
+					zlog_debug(c,"have to sleep %d\n",delta_us);
+              		NANOSEC_TO_TIMESPEC(delta_us * 1000, &nap);
+            	}
             else {
                 /*
                  * calculate how many bytes we are behind and don't bother
                  * time stamping until we have caught up
                  */
-                timesclear(&nap);
+            	timesclear(&nap);
                 skip_length = (tx_us - next_tx_us) * speed;
-                do_div(skip_length, 8 * 1000000);
+                do_div_64(skip_length, 8 * 1000000);
+				zlog_debug(c,"skip_length %d\n",skip_length);
                 *skip_timestamp = true;
             }
         }
    
+   zlog_debug(c, "\npacket size %d\t\tnap " TIMESPEC_FORMAT, len, nap.tv_sec, nap.tv_nsec);
 
     /* 
      * since we apply the adjuster to the sleep time, we can't modify nap
@@ -367,45 +416,28 @@ do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER
     nap_this_time.tv_sec = nap.tv_sec;
     nap_this_time.tv_nsec = nap.tv_nsec;
 
-    zlog_debug(c, "packet size %d %d %d\t\tnap ", len, nap.tv_sec, nap.tv_nsec);
-
-
-
-    if (nsec_adjuster < 0)
-         nsec_adjuster = (nap_this_time.tv_nsec % 10000) / 1000;
-
-          /* update in the range of 0-9 */
-      nsec_times = (nsec_times + 1) % 10;
-
-    	if (nsec_times < nsec_adjuster) {
-                    /* sorta looks like a no-op, but gives us a nice round usec number */
-             nap_this_time.tv_nsec = (nap_this_time.tv_nsec / 1000 * 1000) + 1000;
-            } else {
-              nap_this_time.tv_nsec -= (nap_this_time.tv_nsec % 1000);
-            }
-       zlog_debug(c, "(%d)\tnsec_times = %d\tnap adjust: %lu -> %lu", nsec_adjuster, nsec_times, nap.tv_nsec, nap_this_time.tv_nsec);            
-       
-    
-
-    /* don't sleep if nap = {0, 0} */
+    zlog_debug(c, "\nnap_time before rounding:   " TIMESPEC_FORMAT, nap_this_time.tv_sec, nap_this_time.tv_nsec);
+	
+	
+	 /* don't sleep if nap = {0, 0} */
     if (!timesisset(&nap_this_time))
         return;
 
-    zlog_debug(c, "nap_time before delta calc: %d-%d " , nap_this_time.tv_sec, nap_this_time.tv_nsec);
+    zlog_debug(c, "\nnap_time before delta calc: " TIMESPEC_FORMAT, nap_this_time.tv_sec, nap_this_time.tv_nsec);
     get_delta_time(delta_ctx, &delta_time);
-    zlog_debug(c, "delta:    %d-%d                   " , delta_time.tv_sec, delta_time.tv_nsec);
+    zlog_debug(c, "\ndelta:                      " TIMESPEC_FORMAT, delta_time.tv_sec, delta_time.tv_nsec);
 
-    if (timesisset(&delta_time)) {
+	  if (timesisset(&delta_time)) {
         if (timescmp(&nap_this_time, &delta_time, >)) {
             timessub(&nap_this_time, &delta_time, &nap_this_time);
-            zlog_debug(c, "timesub: %lu %lu", delta_time.tv_sec, delta_time.tv_nsec);
+            zlog_debug(c, "\ntimesub: %lu %lu\n", delta_time.tv_sec, delta_time.tv_nsec);
         } else { 
             timesclear(&nap_this_time);
-            zlog_debug(c, "timesclear:%d %d " , delta_time.tv_sec, delta_time.tv_nsec);
+            zlog_debug(c, "\ntimesclear: \n" TIMESPEC_FORMAT, delta_time.tv_sec, delta_time.tv_nsec);
         }
     }
 
-    /* apply the adjuster... */
+	   /* apply the adjuster... */
     if (timesisset(&adjuster)) {
         if (timescmp(&nap_this_time, &adjuster, >)) {
             timessub(&nap_this_time, &adjuster, &nap_this_time);
@@ -414,7 +446,10 @@ do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER
         }
     }
 
-    zlog_debug(c, "Sleeping:     %d-%d              " , nap_this_time.tv_sec, nap_this_time.tv_nsec);
+    zlog_debug(c, "\nSleeping:                   " TIMESPEC_FORMAT, nap_this_time.tv_sec, nap_this_time.tv_nsec);
+	   
+
+
 
     /*
      * Depending on the accurate method & packet rate computation method
@@ -438,11 +473,11 @@ do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval start_time,COUNTER
         break;
 
     default:
-        zlog_debug(c, "Unknown timer mode %d", accurate);
+        zlog_debug(c, "Unknown timer mode %d \n", accurate);
     }
 
 
-    zlog_debug(c, "sleep delta:%d-%d " , delta_time.tv_sec, delta_time.tv_nsec);
+    zlog_debug(c, "sleep delta: \n" TIMESPEC_FORMAT, delta_time.tv_sec, delta_time.tv_nsec);
 
 
 }
