@@ -146,19 +146,7 @@ main(int argc, char **argv)
         goto bad;
     }
 
-    t = libnet_build_ethernet(
-        enet_dst,                                   /* ethernet destination */
-        enet_src,                                   /* ethernet source */
-        ETHERTYPE_IP,                               /* protocol type */
-        NULL,                                       /* payload */
-        0,                                          /* payload size */
-        l,                                          /* libnet handle */
-        0);                                         /* libnet id */
-    if (t == -1)
-    {
-        fprintf(stderr, "Can't build ethernet header: %s\n", libnet_geterror(l));
-        goto bad;
-    }
+
 
     /*
      *  Write it to the wire.

@@ -51,23 +51,14 @@ int Ethernet_Brodacast_Storm(ETHERNET_BRODACAST_STORM *a)
 
 		  }
 
-		if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-		  {
-			  zlog_debug(c, "%s", libnet_geterror(l));
-		  }
-		  else
-		  {
-		  
-			libnet_adv_free_packet(l, packet);
-		  }
-		  
+	
 		if(storm_time)
 		{
-			send_storm_set_time(l,speed,packet_s,test_time,storm_time,top_speed);
+			send_storm_set_time(l,speed,test_time,storm_time,top_speed);
 		}
 		else
 		{
-			send_storm_random_time(l,speed,packet_s,test_time,top_speed);
+			send_storm_random_time(l,speed,test_time,top_speed);
 		}
 
 		  
@@ -130,26 +121,15 @@ int Ethernet_Multicast_Storm(ETHERNET_MULTICAST_STORM *a)
 			  return 0;
 
 		  }
-
-
-		  if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-		  {
-			  zlog_debug(c, "%s", libnet_geterror(l));
-		  }
-		  else
-		  {
-		  
-			libnet_adv_free_packet(l, packet);
-		  }
 	
 		
 		if(storm_time)
 			{
-				send_storm_set_time(l,speed,packet_s,test_time,storm_time,top_speed);
+				send_storm_set_time(l,speed,test_time,storm_time,top_speed);
 			}
 			else
 			{
-				send_storm_random_time(l,speed,packet_s,test_time,top_speed);
+				send_storm_random_time(l,speed,test_time,top_speed);
 			}
 	
 	
@@ -213,21 +193,13 @@ int Ethernet_Unicast_Storm(ETHERNET_UNICAST_STORM *a)
 		  }
 
 
-		  if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-		  {
-			  zlog_debug(c, "%s", libnet_geterror(l));
-		  }
-		  else
-		  {
-			libnet_adv_free_packet(l, packet);
-		  }
 		  if(storm_time)
 			{
-				send_storm_set_time(l,speed,packet_s,test_time,storm_time,top_speed);
+				send_storm_set_time(l,speed,test_time,storm_time,top_speed);
 			}
 			else
 			{
-				send_storm_random_time(l,speed,packet_s,test_time,top_speed);
+				send_storm_random_time(l,speed,test_time,top_speed);
 			}
 
 
@@ -253,7 +225,7 @@ int Ethernet_Grammar(ETHERNET_GRAMMAR *a)
 	gettimeofday(&start_time,NULL);
 	COUNTER bytes_sent=0;
 
-	int err;
+	int send_len;
 	int j;
 	int k;
 	int f;
@@ -313,23 +285,14 @@ int Ethernet_Grammar(ETHERNET_GRAMMAR *a)
 		  }
 
 
-		  if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-		  {
-			  zlog_debug(c, "%s", libnet_geterror(l));
-		  }
-		  else
-		  {
-		  
-			libnet_adv_free_packet(l, packet);
-		  }
-		  err = libnet_write(l);
-		  	if (err == -1)
+		  send_len = libnet_write(l);
+		  	if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 			if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -364,7 +327,7 @@ int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 	bool top_speed=a->top_speed;
 	COUNTER speed=a->speed;
 	
-	int err;
+	int send_len;
 	int send_size=0;
 	//u_int32_t i;
 	libnet_t *l;
@@ -394,7 +357,8 @@ int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 	{
 		
 		
-		r=rand()%1500;
+	r=rand()%1000;
+	
 	if(r)
 		{
 		u_char *payload=(u_char *)malloc(r+1);
@@ -419,25 +383,16 @@ int Ethernet_Fuzzer(ETHERNET_FUZZER *a)
 		  }
 
 
-		  if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-		  {
-			  zlog_debug(c, "%s", libnet_geterror(l));
-		  }
-		  else
-		  {
-		  
-			libnet_adv_free_packet(l, packet);
-		  }
-		  err = libnet_write(l);
-			if (err == -1)
+		  	send_len = libnet_write(l);
+			if (send_len == -1)
 			{
 				zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 			}
 			if(!top_speed)
 				{
-			
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
-					bytes_sent=bytes_sent+packet_s;
+					
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
+					bytes_sent=bytes_sent+send_len;
 			        start_delta_time(&delta_ctx);
 							
 						

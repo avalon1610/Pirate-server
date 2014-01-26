@@ -28,8 +28,8 @@ hostinfo               = unknown
 /bin/universe          = unknown
 
 PATH: /usr/local/bin
-PATH: /bin
 PATH: /usr/bin
+PATH: /bin
 PATH: /usr/local/sbin
 PATH: /usr/sbin
 PATH: /sbin
@@ -52,7 +52,7 @@ configure:1451: result: /usr/bin/install -c
 configure:1462: checking whether build environment is sane
 configure:1505: result: yes
 configure:1538: checking for gawk
-configure:1554: found /bin/gawk
+configure:1554: found /usr/bin/gawk
 configure:1564: result: gawk
 configure:1574: checking whether make sets $(MAKE)
 configure:1594: result: yes
@@ -385,6 +385,7 @@ config.status:680: creating version.h
 config.status:680: creating include/libnet.h
 config.status:680: creating libnet-config
 config.status:784: creating include/config.h
+config.status:905: include/config.h is unchanged
 config.status:1011: executing depfiles commands
 config.status:1011: executing default commands
 

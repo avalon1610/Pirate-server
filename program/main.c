@@ -89,17 +89,22 @@ int test_main()
 	if (!Init())
 		 return -1;
 
-	ETHERNET_FUZZER a;
+	ICMP_TYPE_CODE a;
+	//ETHERNET_FUZZER a;
 	//a=(ETHERNET_FUZZER *)malloc(sizeof(ETHERNET_FUZZER));
 	memcpy(a.device,"eth0",5);
+	memcpy(a.ip_dst,"192.168.1.222",16);
+	memcpy(a.ip_src,"192.168.1.1",16);
 	u_char b[6]={0x00,0x01,0x02,0x03,0x04,0x05};
 	u_char d[6]={0x02,0x01,0x02,0x03,0x04,0x05};
 	memcpy(a.enet_dst,b,6);
 	memcpy(a.enet_src,d,6);
-	a.speed=10000.0;
+	a.speed=100000.0;
 	a.top_speed=false;
-	Ethernet_Fuzzer(&a);
-
+	Icmp_Type_Code_Cross_Product(&a);
+	//Ethernet_Fuzzer(&a);
+	//frag_ping();
+	//ping();
 
 	
 

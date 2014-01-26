@@ -27,7 +27,7 @@ extern zlog_category_t *c;
 
 
 
-int send_storm_random_time(libnet_t *lib_net,COUNTER speed,int pcap_size,int test_time,bool top_speed)
+int send_storm_random_time(libnet_t *lib_net,COUNTER speed,int test_time,bool top_speed)
 {
 	int R;
 	srand((unsigned)time(NULL));
@@ -39,7 +39,7 @@ int send_storm_random_time(libnet_t *lib_net,COUNTER speed,int pcap_size,int tes
 	while(end<=test_time)
 			{	
 				l=rand()%10;	
-				send_storm(lib_net,speed,pcap_size,l,top_speed); 
+				send_storm(lib_net,speed,l,top_speed); 
 				end = (clock() - start)/CLOCKS_PER_SEC;
 				
 					
@@ -48,7 +48,7 @@ int send_storm_random_time(libnet_t *lib_net,COUNTER speed,int pcap_size,int tes
 	
 }
 
-int send_storm_set_time(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t test_time,clock_t storm_time,bool top_speed)
+int send_storm_set_time(libnet_t *lib_net,COUNTER speed,clock_t test_time,clock_t storm_time,bool top_speed)
 {
 	int l;
 	clock_t s_e_t=0;
@@ -58,7 +58,7 @@ int send_storm_set_time(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t te
 	while(end <= test_time)
 			{						
 					
-					send_storm(lib_net,speed,pcap_size,storm_time,top_speed); 
+					send_storm(lib_net,speed,storm_time,top_speed); 
 					end = (clock() - start)/CLOCKS_PER_SEC;				
 			}
 
@@ -66,9 +66,9 @@ int send_storm_set_time(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t te
 }
 
 
-int send_storm(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t storm_time,bool top_speed)
+int send_storm(libnet_t *lib_net,COUNTER speed,clock_t storm_time,bool top_speed)
 {	
-	int err;
+	int send_len;
 	clock_t start = clock();
     clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 
@@ -82,16 +82,18 @@ int send_storm(libnet_t *lib_net,COUNTER speed,int pcap_size,clock_t storm_time,
 
 	while(end<=storm_time)
 		{
-			err =libnet_write(lib_net);
-			if (err == -1)
+			send_len =libnet_write(lib_net);
+			zlog_debug(c,"Send len :%d\n",send_len);
+			
+			if (send_len == -1)
 	    	{
 	       			zlog_debug(c, "Write error: %s\n", libnet_geterror(lib_net));
 	        			return -1;
 	    	}
 			if(!top_speed)
-				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,pcap_size,&skip_timestamp);
-					bytes_sent=bytes_sent+pcap_size;
+				{	
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
+					bytes_sent=bytes_sent+send_len;
 					if (!skip_timestamp)
 					{
 			                start_delta_time(&delta_ctx);
@@ -335,17 +337,13 @@ uint32_t __div64_32(uint64_t *n, uint32_t base)
 void
 do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval *start_time,COUNTER speed,COUNTER send_size,int len ,bool *skip_timestamp)
 {
-	zlog_debug(c,"start calc sleep " TIMESPEC_FORMAT,(delta_ctx)->tv_sec,(delta_ctx)->tv_usec );
-	 
+		
 	int userdef_timer=0;
-
-
     struct timespec adjuster = { 0, 0 };
     static struct timespec nap = { 0, 0 }, delta_time = {0, 0};
     struct timeval nap_for;
     struct timespec nap_this_time;
     static int32_t nsec_adjuster = -1, nsec_times = -1;
-    static u_int32_t send = 0;      /* accellerator.   # of packets to send w/o sleeping */
     u_int64_t ppnsec; /* packets per nsec */
     static int first_time = 1;      /* need to track the first time through for the pps accelerator */
     static COUNTER skip_length = 0;
@@ -372,23 +370,12 @@ do_sleep(ACCURATE accurate ,delta_t *delta_ctx,struct timeval *start_time,COUNTE
         *skip_timestamp = false;
     }
 
-    /* accelerator time? */
-    if (send > 0) {
-        send --;
-        return;
-    }
-
-
-  
-		zlog_debug(c,"send_size:%d\n",send_size);
+    		
        if (timerisset(delta_ctx)) {
-            COUNTER next_tx_us = (send_size+len) * 8 * 100000;
+            COUNTER next_tx_us = (send_size+len) * 8 * 1000000;
             do_div_64(next_tx_us, speed);  /* bits divided by Mbps = microseconds */
-			zlog_debug(c,"next_tx_us: %d\n",next_tx_us);
            	COUNTER tx_us = TIMEVAL_TO_MICROSEC(delta_ctx) - TIMEVAL_TO_MICROSEC(start_time);
             COUNTER delta_us = (next_tx_us >= tx_us) ? next_tx_us - tx_us : 0;
-			zlog_debug(c,"tx_us: %d\n",tx_us);
-			zlog_debug(c,"delta_us: %d\n",delta_us);
             if (delta_us)
                 /* have to sleep */
             	{

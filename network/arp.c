@@ -74,23 +74,14 @@ int ARP_Request_Storm(ARP_REQUEST_STORM *a)
                 libnet_geterror(l));
         return 0;
     }
-    if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-    {
-        zlog_debug(c,"%s", libnet_geterror(l));
-    }
-    else
-    {
-        zlog_debug(c,"packet size: %d\n", packet_s);
-        libnet_adv_free_packet(l, packet);
-    }
 
 	if(storm_time)
 		{
-			send_storm_set_time(l,speed,packet_s,test_time,storm_time,top_speed);
+			send_storm_set_time(l,speed,test_time,storm_time,top_speed);
 		}
 	else
 		{
-			send_storm_random_time(l,speed,packet_s,test_time,top_speed);
+			send_storm_random_time(l,speed,test_time,top_speed);
 		}
 
     libnet_destroy(l);
@@ -167,23 +158,15 @@ int APR_Host_Reply_Storm(APR_HOST_REPLY_STORM *a)
                 libnet_geterror(l));
         return 0;
     }
-    if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-    {
-        zlog_debug(c, "%s", libnet_geterror(l));
-    }
-    else
-    {
-        zlog_debug(c, "packet size: %d\n", packet_s);
-        libnet_adv_free_packet(l, packet);
-    }
+ 
 	
 	if(storm_time)
 		{
-			send_storm_set_time(l,speed,packet_s,test_time,storm_time,top_speed);
+			send_storm_set_time(l,speed,test_time,storm_time,top_speed);
 		}
 	else
 		{
-			send_storm_random_time(l,speed,packet_s,test_time,top_speed);
+			send_storm_random_time(l,speed,test_time,top_speed);
 		}
 
 
@@ -217,7 +200,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 	bool top_speed=a->top_speed;
 	
 
-		int err;
+		int send_len;
 		u_int32_t i;
 		u_int32_t d;
 		libnet_t *l;
@@ -296,23 +279,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				zlog_debug(c, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				zlog_debug(c, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err == -1)
+		
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 			if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -320,10 +295,7 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 							
 					}
 				}
-			if (err == -1)
-		    {
-		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
-		    }
+
 			libnet_clear_packet(l);
 		}
 		/*2. Test change POROTOL by Grammear_ARP_POROTOL[21]*/
@@ -359,23 +331,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				zlog_debug(c, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				zlog_debug(c, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			libnet_write(l);
-			if (err == -1)
+	
+			send_len=libnet_write(l);
+			if (send_len == -1)
 		    {
 		        fprintf(stderr, "Write error: %s\n", libnet_geterror(l));
 		    }
 			if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -420,23 +384,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				zlog_debug(c, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				zlog_debug(c, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			libnet_write(l);
-			if (err == -1)
+	
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		 	if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -481,23 +437,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				zlog_debug(c, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				zlog_debug(c, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err  == -1)
+	
+			send_len = libnet_write(l);
+			if (send_len  == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		 	if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -542,23 +490,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err == -1)
+		
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		 	 if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -601,23 +541,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err  == -1)
+		
+			send_len= libnet_write(l);
+			if (send_len  == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		  	 if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -664,23 +596,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err  == -1)
+		
+			send_len = libnet_write(l);
+			if (send_len  == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		   	 if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -723,23 +647,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err == -1)
+		
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		    if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -784,23 +700,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				zlog_debug(c, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				zlog_debug(c, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err == -1)
+		
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		  	 if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -843,23 +751,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err == -1)
+		
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		  	 if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -902,23 +802,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err == -1)
+	
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		  	 if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -962,23 +854,15 @@ int ARP_Grammear(ARP_GRAMMEAR *a)
 						libnet_geterror(l));
 				return 0;
 			}/* libnet handle */
-			if (libnet_adv_cull_packet(l, &packet, &packet_s) == -1)
-			{
-				//fprintf(stderr, "%s", libnet_geterror(l));
-			}
-			else
-			{
-				//fprintf(stderr, "packet size: %d\n", packet_s);
-				libnet_adv_free_packet(l, packet);
-			}
-			err = libnet_write(l);
-			if (err == -1)
+
+			send_len = libnet_write(l);
+			if (send_len == -1)
 		    {
 		        zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 		    }
 		   	 if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{
@@ -1064,7 +948,7 @@ int ARP_Cache_Saturation_Storm(ARP_CACHE_SATURATION_STORM *a)
 int ARP_Cache_Send(libnet_t *l,u_char *enet_dst,COUNTER speed,clock_t storm_time,u_int32_t d,bool top_speed)
 {
 	u_char enet_src[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	int err;
+	int send_len;
 	libnet_ptag_t t;
     u_int8_t *packet;
     u_int32_t packet_s;
@@ -1080,8 +964,7 @@ int ARP_Cache_Send(libnet_t *l,u_char *enet_dst,COUNTER speed,clock_t storm_time
 	struct timeval start_time;
 	gettimeofday(&start_time,NULL);
 	COUNTER bytes_sent=0;
-
-	
+		
 	while(end<=storm_time)
 		{
 			int rand_s_ip=rand();
@@ -1136,14 +1019,14 @@ int ARP_Cache_Send(libnet_t *l,u_char *enet_dst,COUNTER speed,clock_t storm_time
 			 
 			   libnet_adv_free_packet(l, packet);
 			 }
-			 err = libnet_write(l);
-			   if (err == -1)
+			 send_len = libnet_write(l);
+			   if (send_len == -1)
 			   {
 				   zlog_debug(c, "Write error: %s\n", libnet_geterror(l));
 			   }
 			 	if(!top_speed)
 				{
-					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,packet_s,&skip_timestamp);
+					do_sleep(accurate_select,&delta_ctx,&start_time,speed,bytes_sent,send_len,&skip_timestamp);
 					bytes_sent=bytes_sent+packet_s;
 					if (!skip_timestamp)
 					{

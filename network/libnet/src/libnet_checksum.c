@@ -53,6 +53,7 @@ libnet_in_cksum(u_int16_t *addr, int len)
     if (len == 1)
     {
         sum += *(u_int16_t *)addr;
+		//sum += *(unsigned char *)addr;
     }
 
     return (sum);
