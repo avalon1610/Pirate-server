@@ -85,27 +85,30 @@ static int parse_mission(const char *data,char *msg)
 static char *get_post_data(struct mg_connection *conn)
 {
     char *data;
-    zlog_debug(c,"content len:%d\n",conn->content_len);
     if (conn->content_len == 0)
         return NULL;
 
-    data = (char *)malloc(conn->content_len);
-    memset(data,0,conn->content_len);
+    data = (char *)NEW(conn->content_len);
     memcpy(data,conn->content,conn->content_len);
     return data;
 }
 
 typedef int(*SETUP_FUNCTION)(const char *,char *);
 
-static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
+static int handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
 {
-    char *reply_header = "HTTP/1.0 200 OK\r\n"
-        "Access-Control-Allow-Origin:";
     char reply[256] = {0};
     char error_msg[32] = {0};
     char *post_data;
     char *origin;
+
+    zlog_debug(c,"call handle_request\n");
     post_data = get_post_data(conn);
+    if (post_data == NULL)
+    {
+        strcpy(error_msg,"Invalid Parameter");
+        goto EXIT;
+    }
     origin = (char *)mg_get_header(conn,"Origin");
     if (origin == NULL)
     {
@@ -114,21 +117,35 @@ static void handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
     }
 
     if (func == NULL)
+    {
+        zlog_error(c,"callback function is NULL\n");
         return;
+    }
 
     if (func(post_data,error_msg))
-        sprintf(reply,"%s%s\r\n\r\nOK",reply_header,origin);
+        strcpy(reply,"OK");
     else
-        sprintf(reply,"%s%s\r\n\r\n%s",reply_header,origin,error_msg);
-
-    mg_write(conn,reply,strlen(reply));
-    free(post_data);
+        sprintf(reply,"%s",error_msg);
+EXIT:
+    DELETE(post_data);
+    if (conn->is_websocket)
+    {
+        mg_websocket_write(conn,1,reply,strlen(reply));
+        zlog_debug(c,"websocket reply sent...[%d]\n",strlen(reply));
+        return false; //websocket should return 0 keep connection alive
+    }
+    else
+    {
+        mg_send_header(conn,"Access-Control-Allow-Origin",origin);
+        mg_send_data(conn,reply,strlen(reply));
+        zlog_debug(c,"normal reply sent...[%d]\n",strlen(reply));
+        return true;
+    }
 }
 
 static int mission_setup(struct mg_connection *conn)
 {
-    handle_request(conn,parse_mission);
-    return 0;
+    return handle_request(conn,parse_mission);
 }
 
 static int parse_env(const char *data,char *msg)
@@ -161,7 +178,7 @@ static int parse_env(const char *data,char *msg)
     pthread_rwlock_unlock(&rwlock_env);
     ret = true;
 
-    zlog_debug(c,"Receive Env:\n host:%s\n target1:%s\n target2:%s\n",
+    zlog_debug(c,"Receive Env:host[%s]target1[%s]target2[%s]\n",
            env->host,
            env->target1?env->target1:(unsigned char *)"NULL",
            env->target2?env->target2:(unsigned char *)"NULL");
@@ -170,6 +187,7 @@ Cleanup:
     return ret;
 }
 
+// this callback should be websocket
 static int parse_runner(const char *data,char *msg)
 {
     cJSON *root;
@@ -194,6 +212,7 @@ static int parse_runner(const char *data,char *msg)
         entry = CONTAINING_RECORD(current,MISSION,node);
         if (entry->type == type)
         {
+            // find the mission
             ret = true;
             break;
         }
@@ -224,27 +243,120 @@ static int parse_scan(const char *data,char *msg)
 
 static int evn_setup(struct mg_connection *conn)
 {
-    handle_request(conn,parse_env);
-    return 0;
+    return handle_request(conn,parse_env);
 }
 
 
 static int runner_setup(struct mg_connection *conn)
 {
-    handle_request(conn,parse_runner);
-    return 0;
+    return handle_request(conn,parse_runner);
 }
 
 
 static int scan_setup(struct mg_connection *conn)
 {
-    handle_request(conn,parse_scan);
-    return 0;
+    return handle_request(conn,parse_scan);
+}
+
+static int iterate_callback(struct mg_connection *conn)
+{
+    if (conn->is_websocket)
+    {
+    }
+    return 1;
+}
+
+// This handler is called for each incoming websocket frame, one or more
+// times for connection lifetime.
+enum SETUP_TYPE
+{
+    INIT = 0,
+    OTHER
+};
+
+static void push_mission(struct mg_connection *conn)
+{
+    cJSON *temp;
+    cJSON *result = NULL;
+    MISSION *entry;
+    char *ret = NULL;
+    LIST_ENTRY *current = mission_list.Flink;
+    pthread_rwlock_rdlock(&rwlock);
+    while (current != &mission_list)
+    {
+        entry = CONTAINING_RECORD(current,MISSION,node);
+        temp = cJSON_CreateBool(entry->type);
+        cJSON_AddItemToObject(result,"mission_type",temp);
+        current = current->Flink;
+    }
+    pthread_rwlock_unlock(&rwlock);
+
+    if (result)
+    {
+        ret = cJSON_Print(result);
+        mg_websocket_write(conn,1,ret,strlen(ret));
+    }
+    else
+    {
+        mg_websocket_write(conn,1,"0",1);
+    }
+}
+
+static int ws_handler(struct mg_connection *conn)
+{
+    static const char oops[] = "websocket data expected\n";
+    int exit_flag = 0;// 0 means call again and again
+
+    if (!conn->is_websocket)
+    {
+        zlog_error(c,"got unexpect data, not websocket\n");
+        mg_send_data(conn,oops,strlen(oops));
+        return 1;
+    }
+
+    char *buf = get_post_data(conn);
+    if (buf == NULL)
+        // may be a heartbeat 
+        goto EXIT;
+
+    zlog_debug(c,"websocket conn:%p\n",conn);
+    zlog_debug(c,"setup websocket recv buf:%s\n",buf);
+    cJSON *root = cJSON_Parse(buf);
+    cJSON *temp = cJSON_GetObjectItem(root,"setup_type");
+    if (temp == NULL)
+    {
+        zlog_error(c,"system initial setup parameter error\n");
+        return 1;
+    }
+
+    int setup_type = temp->valueint;
+    switch (setup_type)
+    {
+        case INIT:
+            // push mission list to new client
+            push_mission(conn);
+            break;
+        case OTHER:
+            break;
+        default:
+            break;
+    }
+
+    if (conn->content_len == 4 && !memcmp(conn->content,"exit",4))
+    {
+        zlog_debug(c,"receive exit,abort.\n");
+        exit_flag = 1;// not 0 means disconnect websocket
+    }
+
+EXIT:
+    DELETE(buf);
+    return exit_flag;
 }
 
 int run_server(void)
 {
     struct mg_server *server;
+    unsigned int current_timer = 0,last_timer = 0;
  
     // Create and configure the server
     server = mg_create_server(NULL);
@@ -254,11 +366,19 @@ int run_server(void)
     mg_add_uri_handler(server,"/env",evn_setup);
     mg_add_uri_handler(server,"/scan",scan_setup);
     mg_add_uri_handler(server,"/runner",runner_setup);
+    mg_add_uri_handler(server,"/setup",ws_handler);
 
     // Serve request. Hit Ctrl-C to terminate the program
     zlog_info(c,"Starting on port %s\n",mg_get_option(server,"listening_port"));
     while(1)
-        mg_poll_server(server,1000);
+    {
+        current_timer = mg_poll_server(server,1000);
+        if (current_timer - last_timer > 1)
+        {
+            last_timer = current_timer;
+            mg_iterate_over_connections(server,iterate_callback,NULL);
+        }
+    }
 
     // Cleanup,and free server instance
     mg_destroy_server(&server);
