@@ -1,8 +1,7 @@
 
 #include "timer.h"
-#include "define.h"
-#include <stdlib.h>
 #include "network.h"
+#include <stdlib.h>
 
 /* Miscellaneous timeval routines */
 

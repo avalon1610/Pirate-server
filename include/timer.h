@@ -7,8 +7,6 @@
 #include <math.h>
 #include "define.h"
 
-
-
 /* AbsoluteTime methods */
 #ifndef NonZero
 #define NonZero(x) ((x).hi | (x).lo)

@@ -28,12 +28,12 @@ hostinfo               = unknown
 /bin/universe          = unknown
 
 PATH: /usr/local/bin
-PATH: /usr/bin
 PATH: /bin
+PATH: /usr/bin
 PATH: /usr/local/sbin
 PATH: /usr/sbin
 PATH: /sbin
-PATH: /home/xjl/bin
+PATH: /home/cc/bin
 
 
 ## ----------- ##
@@ -52,32 +52,36 @@ configure:1451: result: /usr/bin/install -c
 configure:1462: checking whether build environment is sane
 configure:1505: result: yes
 configure:1538: checking for gawk
-configure:1554: found /usr/bin/gawk
+configure:1554: found /bin/gawk
 configure:1564: result: gawk
 configure:1574: checking whether make sets $(MAKE)
 configure:1594: result: yes
 configure:1745: checking whether to enable maintainer-specific portions of Makefiles
 configure:1754: result: no
 configure:1816: checking for gcc
-configure:1832: found /usr/bin/gcc
+configure:1832: found /usr/local/bin/gcc
 configure:1842: result: gcc
 configure:2086: checking for C compiler version
 configure:2089: gcc --version </dev/null >&5
-gcc (GCC) 4.4.7 20120313 (Red Hat 4.4.7-4)
-Copyright (C) 2010 Free Software Foundation, Inc.
+gcc (GCC) 4.7.2
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 configure:2092: $? = 0
 configure:2094: gcc -v </dev/null >&5
 Using built-in specs.
-Target: i686-redhat-linux
-Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-languages=c,c++,objc,obj-c++,java,fortran,ada --enable-java-awt=gtk --disable-dssi --with-java-home=/usr/lib/jvm/java-1.5.0-gcj-1.5.0.0/jre --enable-libgcj-multifile --enable-java-maintainer-mode --with-ecj-jar=/usr/share/java/eclipse-ecj.jar --disable-libjava-multilib --with-ppl --with-cloog --with-tune=generic --with-arch=i686 --build=i686-redhat-linux
+COLLECT_GCC=gcc
+COLLECT_LTO_WRAPPER=/usr/local/libexec/gcc/i686-pc-linux-gnu/4.7.2/lto-wrapper
+Target: i686-pc-linux-gnu
+Configured with: ../gcc-4.7.2/configure --enable-checking=release --enable-languages=c,c++ --disable-multilib
 Thread model: posix
-gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) 
+gcc version 4.7.2 (GCC) 
 configure:2097: $? = 0
 configure:2099: gcc -V </dev/null >&5
-gcc: '-V' option must have argument
+gcc: error: unrecognized command line option '-V'
+gcc: fatal error: no input files
+compilation terminated.
 configure:2102: $? = 1
 configure:2126: checking for C compiler default output
 configure:2129: gcc    conftest.c  >&5
@@ -116,7 +120,8 @@ configure:2487: test -s conftest.o
 configure:2490: $? = 0
 configure:2508: result: none needed
 configure:2526: gcc -c -g -O2  conftest.c >&5
-conftest.c:2: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'me'
+conftest.c:2:3: error: unknown type name 'choke'
+conftest.c:2:3: error: expected '=', ',', ';', 'asm' or '__attribute__' at end of input
 configure:2529: $? = 1
 configure: failed program was:
 | #ifndef __cplusplus
@@ -135,7 +140,8 @@ configure:2944: checking how to run the C preprocessor
 configure:2980: gcc -E  conftest.c
 configure:2986: $? = 0
 configure:3018: gcc -E  conftest.c
-configure:3019:28: error: ac_nonexistent.h: No such file or directory
+configure:3019:28: fatal error: ac_nonexistent.h: No such file or directory
+compilation terminated.
 configure:3024: $? = 1
 configure: failed program was:
 | #line 3009 "configure"
@@ -154,7 +160,8 @@ configure:3062: result: gcc -E
 configure:3087: gcc -E  conftest.c
 configure:3093: $? = 0
 configure:3125: gcc -E  conftest.c
-configure:3126:28: error: ac_nonexistent.h: No such file or directory
+configure:3126:28: fatal error: ac_nonexistent.h: No such file or directory
+compilation terminated.
 configure:3131: $? = 1
 configure: failed program was:
 | #line 3116 "configure"
@@ -178,7 +185,7 @@ configure:3221: test -s conftest.o
 configure:3224: $? = 0
 configure:3316: gcc -o conftest -g -O2   conftest.c  >&5
 configure: In function 'main':
-configure:3311: warning: incompatible implicit declaration of built-in function 'exit'
+configure:3311:7: warning: incompatible implicit declaration of built-in function 'exit' [enabled by default]
 configure:3319: $? = 0
 configure:3321: ./conftest
 configure:3324: $? = 0
@@ -239,7 +246,8 @@ configure:3389: $? = 0
 configure:3400: result: yes
 configure:3426: checking sys/sockio.h usability
 configure:3439: gcc -c -g -O2  conftest.c >&5
-configure:3482:24: error: sys/sockio.h: No such file or directory
+configure:3482:24: fatal error: sys/sockio.h: No such file or directory
+compilation terminated.
 configure:3442: $? = 1
 configure: failed program was:
 | #line 3428 "configure"
@@ -301,7 +309,8 @@ configure: failed program was:
 configure:3458: result: no
 configure:3462: checking sys/sockio.h presence
 configure:3473: gcc -E  conftest.c
-configure:3484:24: error: sys/sockio.h: No such file or directory
+configure:3484:24: fatal error: sys/sockio.h: No such file or directory
+compilation terminated.
 configure:3479: $? = 1
 configure: failed program was:
 | #line 3464 "configure"
@@ -344,7 +353,7 @@ configure:3841: result: yes
 configure:3852: checking link-layer packet interface type
 configure:3885: result: found linux primitives
 configure:3888: checking for packet socket (PF_SOCKET)
-configure:3953: result: yes
+configure:3956: result: test program got EPERM... assuming yes
 configure:3976: checking for Linux proc filesystem
 configure:3988: result: yes
 configure:4054: checking net/ethernet.h usability
@@ -450,15 +459,15 @@ am_cv_CC_dependencies_compiler_type=none
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/xjl/project/network/libnet/missing --run aclocal-1.6'
+ACLOCAL='${SHELL} /home/cc/project/network/libnet/missing --run aclocal-1.6'
 ADDITIONAL_LIBS=''
 AMDEPBACKSLASH='\'
 AMDEP_FALSE='#'
 AMDEP_TRUE=''
-AMTAR='${SHELL} /home/xjl/project/network/libnet/missing --run tar'
-AUTOCONF='${SHELL} /home/xjl/project/network/libnet/missing --run autoconf'
-AUTOHEADER='${SHELL} /home/xjl/project/network/libnet/missing --run autoheader'
-AUTOMAKE='${SHELL} /home/xjl/project/network/libnet/missing --run automake-1.6'
+AMTAR='${SHELL} /home/cc/project/network/libnet/missing --run tar'
+AUTOCONF='${SHELL} /home/cc/project/network/libnet/missing --run autoconf'
+AUTOHEADER='${SHELL} /home/cc/project/network/libnet/missing --run autoheader'
+AUTOMAKE='${SHELL} /home/cc/project/network/libnet/missing --run automake-1.6'
 AWK='gawk'
 CC='gcc'
 CCDEPMODE='depmode=none'
@@ -489,7 +498,7 @@ LTLIBOBJS=' libnet_link_linux$U.lo'
 MAINT='#'
 MAINTAINER_MODE_FALSE=''
 MAINTAINER_MODE_TRUE='#'
-MAKEINFO='${SHELL} /home/xjl/project/network/libnet/missing --run makeinfo'
+MAKEINFO='${SHELL} /home/cc/project/network/libnet/missing --run makeinfo'
 OBJEXT='o'
 PACKAGE='libnet'
 PACKAGE_BUGREPORT=''
@@ -523,7 +532,7 @@ host_os='linux-gnu'
 host_vendor='pc'
 includedir='${prefix}/include'
 infodir='${prefix}/info'
-install_sh='/home/xjl/project/network/libnet/install-sh'
+install_sh='/home/cc/project/network/libnet/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localstatedir='${prefix}/var'
