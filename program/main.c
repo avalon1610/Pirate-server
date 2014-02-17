@@ -14,16 +14,65 @@
 #include "comm.h"
 
 LIST_ENTRY mission_list;
+// mission list lock
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+// mission enviorment setting lock
 pthread_rwlock_t rwlock_env = PTHREAD_RWLOCK_INITIALIZER;
+// single mission info lock
 pthread_rwlock_t rwlock_run = PTHREAD_RWLOCK_INITIALIZER;
 ENV *env;
 RUNNING_MISSION *Running;
 zlog_category_t *c;
 
+void _backtrace(int signo)
+{
+    void *pTrace[256];
+    char **ppszMsg = NULL;
+    size_t uTraceSize = 0;
+    size_t i;
+    static const char szSigMsg[][256] = {
+        "Received SIGSEGV",
+        "Received SIGPIPE",
+        "Received SIGFPE",
+        "Received SIGABRT",
+    };
+
+    do
+    {
+        if (0 == (uTraceSize = backtrace(pTrace,sizeof(pTrace)/sizeof(void *))))
+        {
+            break;
+        }
+
+        if (NULL == (ppszMsg = (char **)backtrace_symbols(pTrace,uTraceSize)))
+        {
+            break;
+        }
+
+        printf("%d. call stack:\n",signo);
+        for (i = 0;i < uTraceSize; ++i)
+        {
+            printf("%s\n",ppszMsg[i]);
+        }
+    } while(0);
+
+    if (NULL != ppszMsg)
+    {
+        free(ppszMsg);
+        ppszMsg = NULL;
+    }
+}
+
+void _singal_handler(int signo)
+{
+    _backtrace(signo);
+    exit(0);
+}
+
 int Init()
 {
     char exe_path[PATH_MAX] = {0};
+    signal(SIGSEGV,_singal_handler);
     if (-1 == readlink("/proc/self/exe",exe_path,PATH_MAX))
     {
         puts("get execute path error!");

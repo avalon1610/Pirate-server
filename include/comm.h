@@ -1,11 +1,16 @@
 #ifndef COMM_H_
 #define COMM_H_
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
 #include "mylist.h"
 #include "cJSON.h"
-#include <pthread.h>
 
 #define DEFAULT_STR_LEN 16
+#define IP_LEN 16
+#define MAC_LEN 6
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,9 +41,9 @@ typedef enum _MISSION_TYPE
 
 typedef enum _MISSION_STATUS
 {
-    RUNNING = 0,
+    STOPPED = 0,
+    RUNNING,
     PAUSED,
-    STOPPED,
     ERROR,
     END
 } MISSION_STATUS;
@@ -67,14 +72,14 @@ typedef struct _MISSION
 } MISSION,*PMISSION;
 
 typedef struct _ENV {
-    unsigned char host[16];
-    unsigned char target1[16];
-    unsigned char target2[16];
-    unsigned char host_mac[6];
-    unsigned char target1_mac[6];
-    unsigned char target2_mac[6];
-	unsigned char device[6];
-} ENV,*PENV; 
+    unsigned char host[IP_LEN];
+    unsigned char target1[IP_LEN];
+    unsigned char target2[IP_LEN];
+    unsigned char host_mac[MAC_LEN];
+    unsigned char target1_mac[MAC_LEN];
+    unsigned char target2_mac[MAC_LEN];
+	unsigned char device[DEFAULT_STR_LEN];
+} ENV,*PENV;
 
 typedef enum _COMMAND_TYPE
 {

@@ -1,13 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
-
-#include "cJSON.h"
-#include "mongoose.h"
 #include "comm.h"
+#include "mongoose.h"
 #include "network.h"
 #include "zlog.h"
+#include "monitor.h"
 
 extern LIST_ENTRY mission_list;
 extern pthread_rwlock_t rwlock;
@@ -16,9 +11,35 @@ extern ENV *env;
 extern RUNNING_MISSION *Running;
 extern zlog_category_t *c;
 
+static int mission_ctl(MISSION_TYPE t,bool go)
+{
+    MISSION *entry;
+    bool find = false;
+    LIST_ENTRY *current = mission_list.Flink;
+    pthread_rwlock_rdlock(&rwlock);
+    while (current != &mission_list)
+    {
+        entry = CONTAINING_RECORD(current,MISSION,node);
+        if (entry->type == t)
+        {
+            if (go)
+                entry->status = RUNNING;
+            else
+                entry->status = STOPPED;
+            find = true;
+            break;
+        }
+        current = current->Flink;
+    }
+    pthread_rwlock_unlock(&rwlock);
+    zlog_debug(c,"mission ctrl[%d]type[%d]: %s\n",go,t,find?"OK":"Failed");
+    return find;
+}
+
 int command_control(COMMAND cmd)
 {
 	pthread_t  pid;
+    int ret;
     if (Running == NULL)
         return false;
     switch(cmd.type)
@@ -28,13 +49,29 @@ int command_control(COMMAND cmd)
         case T_MISSION:
             switch(cmd.order)
             {
+                int ret;
                 case START:
                 case RESUME:
+                    mission_ctl(cmd.m_type,true);
+                    ret = monitor_ctrl(M_START,M_PING);
+                    if (M_ERROR == ret)
+                    {
+                        zlog_error(c,"monitor error when start!\n");
+                        return false;
+                    }
                     if (Running->running_thread_id == 0)
-                        pthread_create(&pid,NULL,(void *)Test_Work,&cmd);
+                        zlog_debug(c,"now running mission thread...\n");
+                        //pthread_create(&pid,NULL,(void *)Test_Work,&cmd);
                     break;
                 case PAUSE:
                 case STOP:
+                    mission_ctl(cmd.m_type,false);
+                    ret = monitor_ctrl(M_STOP,M_PING);
+                    if (M_ERROR == ret)
+                    {
+                        zlog_error(c,"monitor error when stop!\n");
+                        return false;
+                    }
                     break;
                 default:
                     break;
@@ -43,6 +80,7 @@ int command_control(COMMAND cmd)
         default:
             break;
     }
+    return true;
 }
 
 static int parse_mission(const char *data,char *msg)
@@ -102,7 +140,6 @@ static int handle_request(struct mg_connection *conn,SETUP_FUNCTION func)
     char *post_data;
     char *origin;
 
-    zlog_debug(c,"call handle_request\n");
     post_data = get_post_data(conn);
     if (post_data == NULL)
     {
@@ -131,14 +168,12 @@ EXIT:
     if (conn->is_websocket)
     {
         mg_websocket_write(conn,1,reply,strlen(reply));
-        zlog_debug(c,"websocket reply sent...[%d]\n",strlen(reply));
         return false; //websocket should return 0 keep connection alive
     }
     else
     {
         mg_send_header(conn,"Access-Control-Allow-Origin",origin);
         mg_send_data(conn,reply,strlen(reply));
-        zlog_debug(c,"normal reply sent...[%d]\n",strlen(reply));
         return true;
     }
 }
@@ -178,7 +213,7 @@ static int parse_env(const char *data,char *msg)
     pthread_rwlock_unlock(&rwlock_env);
     ret = true;
 
-    zlog_debug(c,"Receive Env:host[%s]target1[%s]target2[%s]\n",
+    zlog_debug(c,"Receive Env:host[%s] target1[%s] target2[%s]\n",
            env->host,
            env->target1?env->target1:(unsigned char *)"NULL",
            env->target2?env->target2:(unsigned char *)"NULL");

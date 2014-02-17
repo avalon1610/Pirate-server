@@ -1,6 +1,9 @@
 #include "ping_common.h"
+#include "zlog.h"
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+
+extern zlog_category_t *c;
 
 #ifndef ICMP_FILTER
 #define ICMP_FILTER 1
@@ -46,7 +49,11 @@ struct sockaddr_in source;
 char *device;
 int pmtudisc = -1;
 
+#ifdef PING_AS_LIB
+int ping_main(int argc,const char *arg_target)
+#else
 int main(int argc,char **argv)
+#endif
 {
     struct hostent *hp;
     int ch,hold,packlen;
@@ -68,6 +75,8 @@ int main(int argc,char **argv)
     source.sin_family = AF_INET;
 
     preload = 1;
+
+#ifndef PING_AS_LIB
     while ((ch = getopt(argc,argv,COMMON_OPTSTR "bRT:")) != EOF)
     {
         switch(ch)
@@ -164,6 +173,9 @@ int main(int argc,char **argv)
     while (argc > 0)
     {
         target = *argv;
+#else
+        target = arg_target;
+#endif
         memset((char *)&whereto,0,sizeof(whereto));
         whereto.sin_family = AF_INET;
         if (inet_aton(target,&whereto.sin_addr) == 1)
@@ -188,11 +200,13 @@ int main(int argc,char **argv)
             hostname = hnamebuf;
         }
 
+#ifndef PING_AS_LIB
         if (argc > 1)
             route[nroute++] = whereto.sin_addr.s_addr;
         argc--;
         argv++;
     }
+#endif
 
     if (source.sin_addr.s_addr == 0)
     {
