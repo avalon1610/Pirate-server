@@ -1,7 +1,9 @@
 #include "ping_common.h"
+#include "ui.h"
 #include <ctype.h>
 #include <sched.h>
 #include <math.h>
+#include <netinet/ip_icmp.h>
 
 int options;
 
@@ -611,6 +613,9 @@ restamp:
             }
         }
     }
+
+    struct icmphdr *icp = (struct icmphdr *)icmph;
+    Feedback(ntohs(icp->un.echo.sequence),triptime,NULL);
     return 0;
 }
 

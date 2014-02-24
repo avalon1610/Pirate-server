@@ -11,6 +11,58 @@ extern ENV *env;
 extern RUNNING_MISSION *Running;
 extern zlog_category_t *c;
 
+LIST_ENTRY feedback_list;
+pthread_rwlock_t fblock = PTHREAD_RWLOCK_INITIALIZER;
+
+typedef struct tagFEEDBACK
+{
+    LIST_ENTRY node;
+    int seq;
+    char triptime[32];
+    char error[64];
+} FEEDBACK,*PFEEDBACK;
+
+void Feedback(long seq,long triptime,char *error)
+{
+    FEEDBACK *fb = (FEEDBACK *)malloc(sizeof(FEEDBACK));
+    memset(fb,0,sizeof(FEEDBACK));
+
+    if (triptime == 0 && error == NULL)
+    {
+        zlog_error(c,"Monitor Feedback error occured!\n");
+        return;
+    }
+
+    if (triptime != 0)
+    {
+        if (triptime >= 100000)
+            sprintf(fb->triptime,"%ld",triptime/1000);
+        else if (triptime >= 10000)
+            sprintf(fb->triptime,"%ld.%01ld",triptime/1000,(triptime % 1000)/100);
+        else if (triptime >= 1000)
+            sprintf(fb->triptime,"%ld.%02ld",triptime/1000, (triptime % 1000)/10);
+        else
+            sprintf(fb->triptime,"%ld.%03ld",triptime/1000, triptime % 1000);
+    }
+
+    if (error != NULL)
+    {
+        strcpy(fb->error,error);
+    }
+
+    fb->seq = seq;
+
+    // no '\n' in this zlog_debug
+    zlog_debug(c,"Feedback seq:%d tt:%sms error:%s",seq,
+                fb->triptime != 0 ? fb->triptime : "0",
+                error ? error : "\n");
+
+    // send feedback to list
+    pthread_rwlock_wrlock(&fblock);
+    InsertTailList(&feedback_list,&fb->node);
+    pthread_rwlock_unlock(&fblock);
+}
+
 static int mission_ctl(MISSION_TYPE t,bool go)
 {
     MISSION *entry;
@@ -295,8 +347,34 @@ static int scan_setup(struct mg_connection *conn)
 
 static int iterate_callback(struct mg_connection *conn)
 {
-    if (conn->is_websocket)
+    if (conn->is_websocket && !IsListEmpty(&feedback_list))
     {
+        FEEDBACK *fb;
+        cJSON *temp = NULL;
+        char *ret;
+        LIST_ENTRY *current;
+        cJSON *result = cJSON_CreateArray();
+
+        pthread_rwlock_wrlock(&fblock);
+        while (!IsListEmpty(&feedback_list))
+        {
+            current = RemoveHeadList(&feedback_list);
+            fb = CONTAINING_RECORD(current,FEEDBACK,node);
+            cJSON_AddItemToArray(result,temp=cJSON_CreateObject());
+            cJSON_AddNumberToObject(temp,"seq",fb->seq);
+            cJSON_AddStringToObject(temp,"content",fb->triptime?fb->triptime:fb->error);
+            if (fb)
+            {
+                free(fb);
+                fb = NULL;
+            }
+        }
+        pthread_rwlock_unlock(&fblock);
+
+        ret = cJSON_Print(result);
+        //zlog_debug(c,"ret:%s\n",ret);
+        mg_websocket_write(conn,1,ret,strlen(ret));
+        cJSON_Delete(result);
     }
     return 1;
 }
@@ -335,6 +413,7 @@ static void push_mission(struct mg_connection *conn)
     {
         mg_websocket_write(conn,1,"0",1);
     }
+    cJSON_Delete(result);
 }
 
 static int ws_handler(struct mg_connection *conn)
@@ -403,6 +482,7 @@ int run_server(void)
     mg_add_uri_handler(server,"/runner",runner_setup);
     mg_add_uri_handler(server,"/setup",ws_handler);
 
+    InitializeListHead(&feedback_list);
     // Serve request. Hit Ctrl-C to terminate the program
     zlog_info(c,"Starting on port %s\n",mg_get_option(server,"listening_port"));
     while(1)

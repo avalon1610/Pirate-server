@@ -1,5 +1,6 @@
 #include "ping_common.h"
 #include "zlog.h"
+#include "ui.h"
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 
@@ -174,7 +175,7 @@ int main(int argc,char **argv)
     {
         target = *argv;
 #else
-        target = arg_target;
+        target = (char *)arg_target;
 #endif
         memset((char *)&whereto,0,sizeof(whereto));
         whereto.sin_family = AF_INET;
@@ -741,7 +742,7 @@ int receive_error_msg()
         {
             print_timestamp();
             printf("From %s icmp_seq=%u ",pr_addr(sin->sin_addr.s_addr),ntohs(icmph.un.echo.sequence));
-            pr_icmph(e->ee_type,e->ee_code,e->ee_info,NULL);
+            pr_icmph(e->ee_type,e->ee_code,e->ee_info,&icmph);
             fflush(stdout);
         }
     }
@@ -1078,72 +1079,73 @@ void pr_iph(struct iphdr *ip)
 // Print a descriptive string about an ICMP header
 void pr_icmph(__u8 type, __u8 code, __u32 info, struct icmphdr *icp)
 {
+    char output[64] = {0};
     switch(type)
     {
         case ICMP_ECHOREPLY:
-            printf("Echo Reply\n");
+            strcpy(output,"Echo Reply\n");
             // XXX ID + Seq + Data
             break;
         case ICMP_DEST_UNREACH:
             switch(code)
             {
                 case ICMP_NET_UNREACH:
-                    printf("Destination Net Unreachable\n");
+                    strcpy(output,"Destination Net Unreachable\n");
                     break;
                 case ICMP_HOST_UNREACH:
-                    printf("Destination Host Unreachable\n");
+                    strcpy(output,"Destination Host Unreachable\n");
                     break;
                 case ICMP_PROT_UNREACH:
-                    printf("Destination Protocol Unreachable\n");
+                    strcpy(output,"Destination Protocol Unreachable\n");
                     break;
                 case ICMP_PORT_UNREACH:
-                    printf("Destination Port Unreachable\n");
+                    strcpy(output,"Destination Port Unreachable\n");
                     break;
                 case ICMP_FRAG_NEEDED:
-                    printf("Frag needed and DF set (mtu = %u)\n");
+                    sprintf(output,"Frag needed and DF set (mtu = %u)\n",info);
                     break;
                 case ICMP_SR_FAILED:
-                    printf("Source Route Failed\n");
+                    strcpy(output,"Source Route Failed\n");
                     break;
                 case ICMP_NET_UNKNOWN:
-                    printf("Destination Net Unknown\n");
+                    strcpy(output,"Destination Net Unknown\n");
                     break;
                 case ICMP_HOST_UNKNOWN:
-                    printf("Destination Host Unknown\n");
+                    strcpy(output,"Destination Host Unknown\n");
                     break;
                 case ICMP_HOST_ISOLATED:
-                    printf("Source Host Isolated\n");
+                    strcpy(output,"Source Host Isolated\n");
                     break;
                 case ICMP_NET_ANO:
-                    printf("Destination Net Prohibited\n");
+                    strcpy(output,"Destination Net Prohibited\n");
                     break;
                 case ICMP_HOST_ANO:
-                    printf("Destination Host Prohibited\n");
+                    strcpy(output,"Destination Host Prohibited\n");
                     break;
                 case ICMP_NET_UNR_TOS:
-                    printf("Destination Net Unreachable for Type of Service\n");
+                    strcpy(output,"Destination Net Unreachable for Type of Service\n");
                     break;
                 case ICMP_HOST_UNR_TOS:
-                    printf("Destination Host Unreachable for Type of Service\n");
+                    strcpy(output,"Destination Host Unreachable for Type of Service\n");
                     break;
                 case ICMP_PKT_FILTERED:
-                    printf("Packet filtered\n");
+                    strcpy(output,"Packet filtered\n");
                     break;
                 case ICMP_PREC_VIOLATION:
-                    printf("Precedence Violation\n");
+                    strcpy(output,"Precedence Violation\n");
                     break;
                 case ICMP_PREC_CUTOFF:
-                    printf("Precedence Cutoff\n");
+                    strcpy(output,"Precedence Cutoff\n");
                     break;
                 default:
-                    printf("Dest Unreachable, Bad Code: %d\n",code);
+                    sprintf(output,"Dest Unreachable, Bad Code: %d\n",code);
                     break;
             }
             if (icp && (options & F_VERBOSE))
                 pr_iph((struct iphdr *)(icp + 1));
             break;
         case ICMP_SOURCE_QUENCH:
-            printf("Source Quench\n");
+            strcpy(output,"Source Quench\n");
             if (icp && (options & F_VERBOSE))
                 pr_iph((struct iphdr *)(icp + 1));
             break;
@@ -1151,66 +1153,70 @@ void pr_icmph(__u8 type, __u8 code, __u32 info, struct icmphdr *icp)
             switch(code)
             {
                 case ICMP_REDIR_NET:
-                    printf("Redirect Network");
+                    strcpy(output,"Redirect Network");
                     break;
                 case ICMP_REDIR_HOST:
-                    printf("Redirect Host");
+                    strcpy(output,"Redirect Host");
                     break;
                 case ICMP_REDIR_NETTOS:
-                    printf("Redirect Type of Service and Network");
+                    strcpy(output,"Redirect Type of Service and Network");
                     break;
                 case ICMP_REDIR_HOSTTOS:
-                    printf("Redirect Type of Service and Host");
+                    strcpy(output,"Redirect Type of Service and Host");
                     break;
                 default:
-                    printf("Redirect, Bad Code: %d",code);
+                    sprintf(output,"Redirect, Bad Code: %d",code);
                     break;
             }
             if (icp)
-                printf("(New nexthop: %s)\n",pr_addr(icp->un.gateway));
+                sprintf(output,"(New nexthop: %s)\n",pr_addr(icp->un.gateway));
             if (icp && (options & F_VERBOSE))
                 pr_iph((struct iphdr *)(icp + 1));
             break;
         case ICMP_ECHO:
-            printf("Echo Request\n");
+            strcpy(output,"Echo Request\n");
             break;
         case ICMP_TIME_EXCEEDED:
             switch(code)
             {
                 case ICMP_EXC_TTL:
-                    printf("Time to live exceeded\n");
+                    strcpy(output,"Time to live exceeded\n");
                     break;
                 case ICMP_EXC_FRAGTIME:
-                    printf("Frag reassembly time exceeded\n");
+                    strcpy(output,"Frag reassembly time exceeded\n");
                     break;
                 default:
-                    printf("Time exceeded, Bad Code: %d\n",code);
+                    sprintf(output,"Time exceeded, Bad Code: %d\n",code);
                     break;
             }
             if (icp && (options & F_VERBOSE))
                 pr_iph((struct iphdr *)(icp + 1));
             break;
         case ICMP_PARAMETERPROB:
-            printf("Parameter problem: pointer = %u\n",icp ? (ntohl(icp->un.gateway)>>24) : info);
+            sprintf(output,"Parameter problem: pointer = %u\n",icp ? (ntohl(icp->un.gateway)>>24) : info);
             if (icp && (options & F_VERBOSE))
                 pr_iph((struct iphdr*)(icp + 1));
             break;
         case ICMP_TIMESTAMP:
-            printf("Timestamp\n");
+            strcpy(output,"Timestamp\n");
             break;
         case ICMP_TIMESTAMPREPLY:
-            printf("Timestamp Reply\n");
+            strcpy(output,"Timestamp Reply\n");
             break;
         case ICMP_INFO_REQUEST:
-            printf("Information Request\n");
+            strcpy(output,"Information Request\n");
             break;
         case ICMP_INFO_REPLY:
-            printf("Information Reply\n");
+            strcpy(output,"Information Reply\n");
             break;
         default:
-            printf("Bad ICMP type: %d\n",type);
+            sprintf(output,"Bad ICMP type: %d\n",type);
             break;
     }
+
+    if (icp)
+        Feedback(ntohs(icp->un.echo.sequence),0,output);
+    printf("%s",output);
 }
 
 #include <linux/filter.h>

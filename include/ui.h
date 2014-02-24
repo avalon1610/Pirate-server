@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 void run_server();
+void Feedback(long seq,long triptime,char *error);
 
 #ifdef __cplusplus
 }

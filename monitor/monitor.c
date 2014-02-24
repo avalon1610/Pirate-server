@@ -74,7 +74,12 @@ static MONITOR_STATUS stop_ping()
     int ret ;
     ret = pthread_kill(ping_tid,SIGINT);
     if (ret != 0)
+    {
         zlog_error(c,"kill ping thread [%d] failed:%d\n",ping_tid,ret);
+        return M_ERROR;
+    }
+    zlog_info(c,"ping monitor thread [%d] exit.\n",ping_tid);
+    return M_FINE;
 }
 
 static MONITOR_STATUS start_arp()
