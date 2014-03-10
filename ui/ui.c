@@ -326,6 +326,8 @@ Cleanup:
 
 static int parse_scan(const char *data,char *msg)
 {
+   // to do
+   // scan control
 }
 
 static int evn_setup(struct mg_connection *conn)
@@ -430,7 +432,7 @@ static int ws_handler(struct mg_connection *conn)
 
     char *buf = get_post_data(conn);
     if (buf == NULL)
-        // may be a heartbeat 
+        // may be a heartbeat
         goto EXIT;
 
     zlog_debug(c,"websocket conn:%p\n",conn);
