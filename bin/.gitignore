@@ -1,4 +1,6 @@
 *
-!/web/*
+!web/
+!web/*
+!web/*/*
 !.gitignore
 !zlog.conf

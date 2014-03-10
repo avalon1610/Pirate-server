@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Project Pirate</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<link rel="stylesheet" type="text/css" href="css/custom.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-switch.css">
+</head>
+<body>
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">System Initializing...</h4>
+				</div>
+				<div class="modal-body">
+					
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="top-alert">
+		<div class="alert alert-success" id="config-saved-alert-success">Config Saved !</div>
+		<div class="alert alert-danger" id="config-saved-alert-error">Config Save Error !</div>
+	</div>
+	<div class="navbar navbar-default navbar-fixed-top" role="banner">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+				data-target=".navbar-collapse">
+				<span class="icon-bar"></span> <span class="icon-bar"></span> <span
+				class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="#">Project</a>
+		</div>
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="#" id="def-env">Environment</a></li>
+				<li class="dropdown"><a href="#" id="def-scan" class="dropdown-toggle"
+					data-toggle="dropdown">Scanner<b class="caret"></b>
+				</a>
+				<ul class="dropdown-menu">
+					<li class="dropdown-header">Proactive</li>
+					<li><a href="#" id="tcp-scan">TCP</a></li>
+					<li><a href="#" id="udp-scan">UDP</a></li>
+					<li class="divider"></li>
+					<li class="dropdown-header">Passive</li>
+					<li><a href="#" id="pas-scan">Passive detective</a></li>
+				</ul></li>
+				<li class="dropdown"><a href="#" id="def-test" class="dropdown-toggle"
+					data-toggle="dropdown">Test Configure<b class="caret"></b>
+				</a>
+				<ul class="dropdown-menu">
+					<li><a href="#" id="arp-test">ARP</a></li>
+					<li><a href="#" id="icmp-test">ICMP</a></li>
+					<li class="divider"></li>
+					<li><a href="#">Passive detective</a></li>
+				</ul></li>
+				<li><a href="#" id="def-runner">Test Runner</a></li>
+				<li><a href="#">Event Log</a></li>
+				<li><a href="#">Test Result</a></li>
+			</ul>
+			<form class="navbar-right navbar-form">
+				<span class="label label-default">Auto Save</span>
+				<div class="make-switch switch-small" data-on="success" id="auto-save-checkbox">
+					<input type="checkbox" checked>
+				</div>
+				<button type="button" class="navbar-btn btn-xs btn btn-success" id="manual-save-button" 
+				style="display: none;">&nbsp;Save&nbsp;</button>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<div id="env-content" class='present'>
+		<span id="ENV"></span>
+		<div class="panel panel-default" id="host-panel">
+			<div  class="panel-heading">
+				<h3 class="panel-title">Host</h3>
+			</div>
+			<div class="panel-body">
+				<div class="input-group">
+					<span class="input-group-addon">IP</span> 
+					<input type="text" class="form-control ip-input">
+				</div>
+				<div class="input-group">
+					<span class="input-group-addon">MAC</span> 
+					<input type="text" class="form-control mac-input">
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default" id="target-panel-1">
+			<div class="panel-heading">
+				<h3 class="panel-title">Target</h3>
+			</div>
+			<div class="panel-body">
+				<div class="input-group">
+					<span class="input-group-addon">IP</span> 
+					<input type="text" class="form-control ip-input">
+				</div>
+				<div class="input-group">
+					<span class="input-group-addon">MAC</span> 
+					<input type="text" class="form-control mac-input">
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default" id="target-panel-2">
+			<div  class="panel-heading">
+				<h3 class="panel-title">Target</h3>
+			</div>
+			<div class="panel-body">
+				<div class="input-group">
+					<span class="input-group-addon">IP</span> 
+					<input type="text" class="form-control ip-input">
+				</div>
+				<div class="input-group">
+					<span class="input-group-addon">MAC</span> 
+					<input type="text" class="form-control mac-input" >
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="tcp-content" style="display:none;">
+		<span id="SCAN"></span>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">TCP</h3>
+			</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	</div>
+
+	<div id="udp-content" name="SCAN" style="display:none;">
+		<span id="SCAN"></span>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">UDP</h3>
+			</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	</div>
+
+	<div id="arp-content"  name="MISSION" style="display:none;">
+		<span id="MISSION"></span>
+		<div class="row">
+			<div class="col-md-5">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">ARP</h3>
+					</div>
+					<div class="panel-body">
+						<div class="list-group">
+							<a href="#" class="list-group-item" name="ARP_REQUEST_STORM">
+								<p class="list-group-item-heading">Request Storm</p>
+								<div class="list-group-item-text container-fluid">
+									<div class="row">
+										<div class="col-md-3">
+											<h4><span class="label label-default">Rate Limit</span></h4>
+										</div>
+										<div class="col-md-9">
+											<div class="btn-group" name="ratelimit-type" data-toggle="buttons" id="rate-limit-group">
+												<label class="btn btn-primary active">
+													<input type="radio" id="Closed-radio-Rate">Closed
+												</label>
+												<label class="btn btn-primary">
+													<input type="radio" id="Limit-radio-Rate">Limit
+												</label>
+												<label class="btn btn-primary" data-toggle="tooltip" data-placement="top" 
+												title="DoS Search Mode" data-container="body">
+													<input type="radio" id="Dos-radio-Rate">DoS 
+												</label>
+												<label class="btn btn-primary">
+													<input type="radio" id="Global-radio-Rate" >Global
+												</label>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-11">
+											<div class="input-group"  style="display:none;" id="limit-input">
+												<input type="text" class="form-control int-input" name="limit" placeholder="input rate limit (packet/second)">
+												<span class="input-group-addon">P/s</span>
+											</div>
+										</div> 
+									</div>
+									<div class="row">
+										<div class="col-md-11">
+											<div class="input-group" style="display:none;" id="dos-input">
+												<input type="text" class="form-control int-input" name="interval" placeholder="Interval">
+												<span class="input-group-addon">%</span>   
+												<input type="text" class="form-control int-input" name="begin" placeholder="Begin">
+												<span class="input-group-addon">%</span>
+												<input type="text" class="form-control int-input" name="end" placeholder="End">
+												<span class="input-group-addon">%</span>
+											</div>
+										</div> 
+									</div>
+									<div class="row">
+										<div class="col-md-3">
+											<h4><span class="label label-default">Duration</span></h4>
+										</div>
+										<div class="col-md-5">
+											<div class="btn-group" name="duration-type" data-toggle="buttons" id="duration-group">
+												<label class="btn btn-primary">
+													<input type="radio" id="Set-radio-Duration">Set
+												</label>
+												<label class="btn btn-primary active">
+													<input type="radio" id="Global-radio-Duration">Global
+												</label>
+											</div>
+										</div> 
+									</div>
+									<div class="row">
+										<div class="col-md-11">
+											<div class="input-group" style="display:none;" id="duration-input">
+												<input type="text" class="form-control int-input" name="duration" placeholder="input duration (second)">
+												<span class="input-group-addon">s</span>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-4">
+											<h4><span class="label label-default">Packet Capture</span></h4>
+										</div>
+										<div class="col-md-8">
+											<select class="form-control" name="packet-capture">
+												<option value="global">Global</option>
+												<option value="one">One</option>
+												<option value="two">One</option>
+											</select>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-4">
+											<h4><span class="label label-default">Target Device</span></h4>
+										</div>
+										<div class="col-md-8">
+											<select class="form-control" name="target-device">
+												<option value="global">Global</option>
+												<option value="one">One</option>
+												<option value="two">One</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</a>
+							<a href="#" class="list-group-item" name="ARP_HOST_REPLY_STORM">
+								<p class="list-group-item-heading">Host Reply Storm</p>
+								<div class="list-group-item-text">
+									<div class="input-group">
+										<span class="input-group-addon">Rate</span>
+										<input type="text" class="form-control double-input">
+										<span class="input-group-addon">P/s</span>
+									</div>
+									<div class="input-group">
+										<span class="input-group-addon">Size</span>
+										<input type="text" class="form-control double-input">
+									</div>
+								</div>
+							</a>
+							<a href="#" class="list-group-item" name="ARP_CACHE_SATURATION_STORM">
+								<p class="list-group-item-heading">Cache Saturation Storm</p>
+								<div class="list-group-item-text">
+									<div class="input-group">
+										<span class="input-group-addon">Rate</span>
+										<input type="text" class="form-control double-input">
+										<span class="input-group-addon">P/s</span>
+									</div>
+									<div class="input-group">
+										<span class="input-group-addon">Size</span>
+										<input type="text" class="form-control double-input">
+									</div>
+								</div>
+							</a>
+							<a href="#" class="list-group-item" name="ARP_GRAMMEAR">Grammear</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-7">
+				<div class="panel panel-default content-info" name="ARP" style="display:block;height: 270px;">
+					<div class="panel-heading">ARP 总说明</div>
+					<div class="panel-body">
+						离离原上草，一岁一枯荣。野火烧不尽，春风吹又生。远芳侵古道，晴翠接荒城。又送王孙去，萋萋满别情。ddddddddddddddddddd  ddddddddddddddddddddd aaaaaaaaaaaaac aaaaaaaaaaaaaac cccccc
+					</div>
+				</div>
+				<div class="panel panel-default content-info" name="ARP_REQUEST_STORM">
+					<div class="panel-heading">ARP Request Storm (L1/L2)</div>
+					<div class="panel-body">
+						ARP Request Storm (L1/L2) generates identical,jaidccccc ccccccccc ccccccc cccass
+						aaaaaaaa aaaaa aaaaaaaa aaaaaaaa aaaaaaaaaa aaaaaaaaa aaaaaaaaaa aaaaaaaaaaaaa
+						aaaaaaaaaaaa aaaaaaaa aaaaaaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaa aaaccccccc cccccccccc ccccc cccccccccccc cccccccccccc ccccccc cccccccccccccccccccc cccccccccccccccccccccccccccccc cccccccc ccccccccccc ccccccccc
+						aa sssssssssssssssssssssc ddddddddddddddddddddddd  ddddddddddddddddddddd aaaaaaaaaaaaac aaaaaaaaaaaaaac cccccc
+					</div>
+				</div>
+				<div class="panel panel-default content-info" name="ARP_HOST_REPLY_STORM">
+					<div class="panel-heading">ARP_HOST_REPLY_STORM</div>
+					<div class="panel-body">
+						ARP_HOST_REPLY_STORM dddddddddddd  ddddddddddddddddddddd aaaaaaaaaaaaac aaaaaaaaaaaaaac cccccc
+					</div>
+				</div>
+				<div class="panel panel-default content-info" name="ARP_CACHE_SATURATION_STORM">
+					<div class="panel-heading">ARP_CACHE_SATURATION_STORM</div>
+					<div class="panel-body">
+						ARP_CACHE_SATURATION_STORM ccccccccccccc cccccccccccccccccccccccccccccc cccccccc ccccccccccc ccccccccc
+						aa sssssssssssssssssssssc ddddddddddddddddddddddd  ddddddddddddddddddddd aaaaaaaaaaaaac aaaaaaaaaaaaaac cccccc
+					</div>
+				</div>
+				<div class="panel panel-default content-info" name="ARP_GRAMMEAR">
+					<div class="panel-heading">ARP_GRAMMEAR</div>
+					<div class="panel-body">
+						ARP_GRAMMEAR aaaaaaaaaaa aaaaaaaaaaaa aaaaaaaaaaaaaaaa aaaaaaaaaaaa aaaccccccc cccccccccc ccccc cccccccccccc cccccccccccc ccccccc cccccccccccccccccccc cccccccccccccccccccccccccccccc cccccccc ccccccccccc ccccccccc
+						aa sssssssssssssssssssssc ddddddddddddddddddddddd  ddddddddddddddddddddd aaaaaaaaaaaaac aaaaaaaaaaaaaac cccccc
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="icmp-content" name="MISSION" style="display:none;">
+		<span id="MISSION"></span>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">ICMP</h3>
+			</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	</div>
+
+	<div id="runner-content" name="RUNNER" style="display:none;">
+		<span id="RUNNER"></span>
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>Mission Name</th>
+					<th>Progress</th>
+					<th>Operation</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="table-empty">
+					<td></td>
+					<td>No Mission</td>
+					<td></td>
+				</tr>
+			</tbody>
+				
+		</table>
+		<canvas id="myChart" width="1200" height="500" class="center-block"></canvas>
+	</div>
+</div>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-switch.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/Chart.min.js"></script>
+<script type="text/javascript" src="js/logic.js"></script>
+<script type="text/javascript" src="js/ui.js"></script>
+
+</body>
+</html>

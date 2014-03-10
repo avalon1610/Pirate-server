@@ -1,0 +1,106 @@
+body {
+	padding-top: 70px;
+	padding-bottom: 20px;
+}
+
+.navbar {
+	margin-bottom: 20px;
+}
+
+body .navbar-form {
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+
+body .navbar-form .btn-xs {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+#env-content .panel {
+	width:31%;
+}
+
+.input-group {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.panel {
+	display:inline-block;
+	margin:0 10px 10px 10px;
+}
+
+
+#arp-content .panel {
+	width: 100%;
+}
+
+
+#arp-content h4 {
+	display: inline-block;
+}
+
+#arp-content select {
+	display: inline-block;
+	width: auto;
+	margin-top: 2.5px;
+}
+
+#arp-content .btn-group {
+	margin-top: 2.5px;
+}
+
+#top-alert .alert {
+	position: fixed;
+	top: 0;
+	left: 50%;
+	z-index: 9999;
+	padding: 5px;
+	display: none;
+}
+
+#config-saved-alert-success {
+	width: 106px;
+	margin-left: -53px;
+}
+
+#config-saved-alert-error {
+	width: 134px;
+	margin-left: -67px;
+	word-wrap: break-word; 
+}
+
+.list-group-item-text {
+	display: none;
+}
+
+.content-info {
+	display: none;
+}
+
+#runner-content .progress {
+	height: 20px;
+	margin: 0;
+}
+
+#runner-content .progress-bar {
+	opacity: .75;
+}
+
+.progress-bar p {
+	margin: 0;
+}
+
+#runner-content .progress-td {
+	width: 100%;
+}
+
+#runner-content td,#runner-content th{
+	width: auto;
+	white-space: nowrap;
+}
+
+#runner-content .progress-bar,#runner-content .progress.active {
+	-webkit-animation: progress-bar-stripes 1s linear infinite;
+}
